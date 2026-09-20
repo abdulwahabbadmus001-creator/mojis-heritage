@@ -1,0 +1,73 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function admin() {
+      return signedIn() &&
+             request.auth.token.admin == true;
+    }
+
+    match /posts/{id} {
+      allow read: if resource.data.isPublished == true || admin();
+      allow create, update, delete: if admin();
+    }
+
+    match /listings/{id} {
+      allow read: if resource.data.isPublished == true || admin();
+      allow create, update, delete: if admin();
+    }
+
+    match /comments/{id} {
+
+      // Public visitors can only see approved comments.
+      allow read: if resource.data.isApproved == true || admin();
+
+      // Visitors can submit comments, but cannot approve themselves.
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'postId',
+          'displayName',
+          'text',
+          'isApproved',
+          'isFlagged',
+          'createdAt'
+        ]) &&
+        request.resource.data.postId is string &&
+        request.resource.data.postId.size() > 0 &&
+        request.resource.data.postId.size() <= 120 &&
+        request.resource.data.displayName is string &&
+        request.resource.data.displayName.size() >= 2 &&
+        request.resource.data.displayName.size() <= 60 &&
+        request.resource.data.text is string &&
+        request.resource.data.text.size() >= 3 &&
+        request.resource.data.text.size() <= 1000 &&
+        request.resource.data.isApproved == false &&
+        request.resource.data.isFlagged == false;
+
+      // Only administrators can moderate or delete comments.
+      allow update, delete: if admin();
+    }
+
+    match /siteSettings/{id} {
+      allow read: if true;
+      allow create, update, delete: if admin();
+    }
+
+    match /analytics/{id} {
+      allow read, write: if admin();
+    }
+
+    match /contactRateLimits/{id} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
