@@ -2,8 +2,11 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  Outlet
+  Outlet,
+  useLocation
 } from "react-router-dom";
+
+import { useEffect } from "react";
 
 import { AuthProvider } from "./context/Auth";
 import { Navbar, Footer } from "./components/Site";
@@ -36,27 +39,74 @@ import {
   Analytics
 } from "./admin/Admin";
 
+/*
+----------------------------------
+   GLOBAL SCROLL TO TOP
+----------------------------------
+
+Whenever the URL changes, automatically move
+the visitor to the top of the newly opened page.
+
+This applies to both:
+- Public website routes
+- Admin dashboard routes
+*/
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant"
+    });
+  }, [pathname]);
+
+  return null;
+}
+
+/*
+----------------------------------
+   PUBLIC WEBSITE LAYOUT
+----------------------------------
+*/
 function PublicLayout() {
   return (
     <>
       <Navbar />
+
       <main>
         <Outlet />
       </main>
+
       <Footer />
     </>
   );
 }
 
+/*
+----------------------------------
+   APPLICATION ROUTES
+----------------------------------
+*/
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          {/* PUBLIC WEBSITE */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<Home />} />
+        <ScrollToTop />
 
+        <Routes>
+          {/* =========================
+              PUBLIC WEBSITE
+          ========================== */}
+          <Route element={<PublicLayout />}>
+            {/* HOME */}
+            <Route
+              path="/"
+              element={<Home />}
+            />
+
+            {/* CULTURAL HERITAGE */}
             <Route
               path="/heritage"
               element={
@@ -67,6 +117,7 @@ export default function App() {
               }
             />
 
+            {/* FESTIVALS */}
             <Route
               path="/festivals"
               element={
@@ -77,6 +128,7 @@ export default function App() {
               }
             />
 
+            {/* DOCUMENTARIES */}
             <Route
               path="/documentaries"
               element={
@@ -87,6 +139,7 @@ export default function App() {
               }
             />
 
+            {/* SHORT HISTORIES */}
             <Route
               path="/histories"
               element={
@@ -97,6 +150,7 @@ export default function App() {
               }
             />
 
+            {/* HEROES & HEROINES */}
             <Route
               path="/heroes"
               element={
@@ -107,6 +161,7 @@ export default function App() {
               }
             />
 
+            {/* TRADITIONAL FOODS */}
             <Route
               path="/foods"
               element={
@@ -117,6 +172,7 @@ export default function App() {
               }
             />
 
+            {/* LANGUAGES */}
             <Route
               path="/languages"
               element={
@@ -127,68 +183,131 @@ export default function App() {
               }
             />
 
-            <Route path="/gallery" element={<Gallery />} />
+            {/* PHOTO GALLERY */}
+            <Route
+              path="/gallery"
+              element={<Gallery />}
+            />
 
-            {/* DISCOVERY */}
-            <Route path="/cultures" element={<Cultures />} />
+            {/* =========================
+                CULTURE DISCOVERY
+            ========================== */}
+            <Route
+              path="/cultures"
+              element={<Cultures />}
+            />
+
             <Route
               path="/cultures/:slug"
               element={<CultureDetail />}
             />
 
+            {/* FESTIVAL CALENDAR */}
             <Route
               path="/calendar"
               element={<FestivalCalendar />}
             />
 
-            <Route path="/saved" element={<Saved />} />
+            {/* SAVED ARTICLES */}
+            <Route
+              path="/saved"
+              element={<Saved />}
+            />
 
-            {/* SEARCH */}
-            <Route path="/search" element={<SearchPage />} />
+            {/* =========================
+                SEARCH
+            ========================== */}
+            <Route
+              path="/search"
+              element={<SearchPage />}
+            />
 
-            {/* ARTICLES */}
-            <Route path="/post/:id" element={<Post />} />
+            {/* =========================
+                ARTICLES
+            ========================== */}
+            <Route
+              path="/post/:id"
+              element={<Post />}
+            />
 
-            {/* VISIT PLANNER */}
-            <Route path="/visit" element={<Visit />} />
+            {/* =========================
+                VISIT PLANNER
+            ========================== */}
+            <Route
+              path="/visit"
+              element={<Visit />}
+            />
+
             <Route
               path="/visit/:id"
               element={<VisitDetail />}
             />
 
-            {/* ORGANISATION */}
-            <Route path="/about" element={<About />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/contact" element={<Contact />} />
+            {/* =========================
+                ORGANISATION
+            ========================== */}
+            <Route
+              path="/about"
+              element={<About />}
+            />
 
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
+            <Route
+              path="/privacy"
+              element={<Privacy />}
+            />
+
+            <Route
+              path="/contact"
+              element={<Contact />}
+            />
+
+            {/* =========================
+                404
+            ========================== */}
+            <Route
+              path="*"
+              element={<NotFound />}
+            />
           </Route>
 
-          {/* ADMIN NEWSROOM */}
-          <Route path="/admin" element={<AdminGate />}>
-            <Route index element={<Dashboard />} />
+          {/* =========================
+              ADMIN NEWSROOM
+          ========================== */}
+          <Route
+            path="/admin"
+            element={<AdminGate />}
+          >
+            {/* ADMIN DASHBOARD */}
+            <Route
+              index
+              element={<Dashboard />}
+            />
 
+            {/* STORIES & POSTS */}
             <Route
               path="posts"
               element={<PostsAdmin />}
             />
 
+            {/* VISIT PLANNER */}
             <Route
               path="visit"
               element={<ListingsAdmin />}
             />
 
+            {/* COMMENTS */}
             <Route
               path="comments"
               element={<CommentsAdmin />}
             />
 
+            {/* SITE SETTINGS */}
             <Route
               path="settings"
               element={<SiteSettings />}
             />
 
+            {/* ANALYTICS */}
             <Route
               path="analytics"
               element={<Analytics />}
