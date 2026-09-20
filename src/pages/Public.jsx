@@ -1,4 +1,4 @@
-import {
+﻿import {
   useEffect,
   useMemo,
   useState
@@ -61,7 +61,6 @@ import {
 
 import {
   Share,
-  Ad,
   EmptyState,
   PageLoading
 } from "../components/Site";
@@ -432,9 +431,6 @@ export function Home() {
           </div>
         </div>
       </section>
-
-      <Ad />
-
       {/* EXPLORE CULTURES */}
       <section className="container section">
         <SectionHeading
@@ -966,8 +962,6 @@ export function Category({
             actionLabel="Clear filters"
           />
         )}
-
-        <Ad />
       </section>
     </>
   );
@@ -1119,7 +1113,7 @@ export function CultureDetail() {
             to="/cultures"
             className="back-link"
           >
-            ← All cultures
+            ← Back to cultures
           </Link>
 
           <span className="eyebrow light">
@@ -1981,8 +1975,6 @@ export function Post() {
           </main>
 
           <aside className="article-sidebar">
-            <Ad />
-
             <div className="sidebar-box">
               <h3 className="heading">
                 About this story
@@ -2674,8 +2666,6 @@ export function Visit() {
             )}
           </MapContainer>
         )}
-
-        <Ad />
       </section>
     </>
   );
@@ -2858,8 +2848,6 @@ export function VisitDetail() {
               </div>
             </dl>
           </div>
-
-          <Ad />
         </aside>
       </section>
     </>

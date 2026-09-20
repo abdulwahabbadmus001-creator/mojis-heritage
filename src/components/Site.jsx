@@ -1,4 +1,4 @@
-import {
+﻿import {
   useEffect,
   useRef,
   useState
@@ -652,30 +652,6 @@ export function Footer() {
   );
 }
 
-/* ======================================================
-   ADVERTISEMENT PLACEHOLDER
-====================================================== */
-
-export function Ad() {
-  return (
-    <div
-      className="container ad"
-      role="complementary"
-      aria-label="Advertisement"
-    >
-      <small>
-        ADVERTISEMENT
-      </small>
-
-      <br />
-
-      <b>
-        Advertisement — Future
-        Monetisation Zone
-      </b>
-    </div>
-  );
-}
 
 /* ======================================================
    SOCIAL SHARING
