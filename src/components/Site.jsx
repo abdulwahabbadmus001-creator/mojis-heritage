@@ -1,4 +1,4 @@
-﻿import {
+import {
   useEffect,
   useRef,
   useState
@@ -281,7 +281,8 @@ export function Navbar() {
           onClick={closeMenu}
           className="heading brand"
         >
-          Moji&apos;s Heritage
+          <img src="/mojis-mark.svg" alt="" className="brand-mark" />
+          <span className="brand-name">Moji&apos;s Heritage</span>
         </Link>
 
         <nav
@@ -522,8 +523,9 @@ export function Footer() {
       <div className="container footer-grid">
 
         <div>
-          <h2 className="heading">
-            Moji&apos;s Heritage
+          <h2 className="heading footer-brand">
+            <img src="/mojis-mark.svg" alt="" className="brand-mark" />
+            <span>Moji&apos;s Heritage</span>
           </h2>
 
           <p>

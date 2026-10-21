@@ -62,12 +62,12 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/favicon.svg"
+      href="/mojis-mark.svg"
     />
 
     <link
       rel="alternate icon"
-      href="/favicon.svg"
+      href="/mojis-mark.svg"
     />
 
     <!-- ==================================================
@@ -149,6 +149,7 @@
       crossorigin
     />
 
+      <link rel="manifest" href="/manifest.webmanifest" />
   </head>
 
   <body>
@@ -157,6 +158,9 @@
       interactive experience.
     </noscript>
 
+        <div id="heritage-startup" aria-hidden="true" style="position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:#faf9f5">
+      <img src="/mojis-mark.svg" alt="" style="width:min(38vw,155px);height:auto;border:0;background:transparent" />
+    </div>
     <div id="root"></div>
 
     <script

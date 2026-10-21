@@ -1,0 +1,10 @@
+{
+  "name": "Moji's Heritage",
+  "short_name": "Moji's Heritage",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FAF9F5",
+  "theme_color": "#1a5c2e",
+  "icons": [{"src":"/mojis-mark.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}
