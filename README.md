@@ -1,13 +1,5 @@
 <div align="center">
-  <img src="./public/mojis-mark.svg" alt="Moji's Heritage Logo" width="180" />
-
-  # Moji's Heritage
-
-  Discovering, preserving and celebrating Nigeria's cultural heritage.
-</div>
-
-<div align="center">
-
+ <img src="./public/mojis-mark.svg" alt="Moji's Heritage Logo" width="180" />
 # Moji's Heritage
 
 ### Preserving Nigerian heritage through technology
