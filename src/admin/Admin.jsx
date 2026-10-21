@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
-
 import { useAuth } from "../context/Auth";
-
 import {
   getAll,
   createItem,
@@ -11,9 +9,7 @@ import {
   getSiteSettings,
   saveSiteSettings,
 } from "../services/content";
-
 import { firebaseReady } from "../firebase";
-
 const CATEGORIES = [
   ["heritage", "Cultural Heritage"],
   ["festivals", "Festivals"],
@@ -24,7 +20,6 @@ const CATEGORIES = [
   ["languages", "Languages"],
   ["gallery", "Photo Gallery"],
 ];
-
 const FESTIVAL_TYPES = [
   "Cultural Festival",
   "Religious Festival",
@@ -35,7 +30,6 @@ const FESTIVAL_TYPES = [
   "Museum",
   "Natural Landmark",
 ];
-
 const MONTHS = [
   "January",
   "February",
@@ -52,7 +46,6 @@ const MONTHS = [
   "Year-round",
   "Varies",
 ];
-
 const STATES = [
   "Abia",
   "Adamawa",
@@ -92,7 +85,6 @@ const STATES = [
   "Zamfara",
   "Federal Capital Territory",
 ];
-
 const REGIONS = [
   "North Central",
   "North East",
@@ -101,7 +93,6 @@ const REGIONS = [
   "South South",
   "South West",
 ];
-
 const blankPost = {
   title: "",
   category: "heritage",
@@ -111,11 +102,10 @@ const blankPost = {
   body: "",
   coverImage: "",
   youtubeUrl: "",
-  isPublished: true,
+  isPublished: false,
   scheduledDate: "",
   views: 0,
 };
-
 const blankListing = {
   name: "",
   state: "",
@@ -134,25 +124,20 @@ const blankListing = {
   isPublished: true,
   scheduledDate: "",
 };
-
 function readableDate(value) {
   if (!value) return "—";
-
   try {
     if (typeof value?.toDate === "function") {
       return value.toDate().toLocaleString();
     }
-
     return new Date(value).toLocaleString();
   } catch {
     return "—";
   }
 }
-
 function categoryName(value) {
   return CATEGORIES.find(([id]) => id === value)?.[1] || value;
 }
-
 function statusFor(item) {
   if (
     item.scheduledDate &&
@@ -161,13 +146,10 @@ function statusFor(item) {
   ) {
     return "Scheduled";
   }
-
   return item.isPublished ? "Published" : "Draft";
 }
-
 function StatusBadge({ item }) {
   const status = statusFor(item);
-
   return (
     <span
       style={{
@@ -188,10 +170,8 @@ function StatusBadge({ item }) {
     </span>
   );
 }
-
 function ImagePreview({ src, alt = "Preview" }) {
   if (!src) return null;
-
   return (
     <div style={{ marginTop: "0.75rem" }}>
       <img
@@ -212,7 +192,6 @@ function ImagePreview({ src, alt = "Preview" }) {
     </div>
   );
 }
-
 function AdminLoading() {
   return (
     <section className="container section">
@@ -221,32 +200,25 @@ function AdminLoading() {
     </section>
   );
 }
-
 export function AdminGate() {
   const { user, isAdmin, loading } = useAuth();
-
   if (loading) {
     return <AdminLoading />;
   }
-
   if (!firebaseReady) {
     return <AdminLogin setup />;
   }
-
   if (!user) {
     return <AdminLogin />;
   }
-
   if (!isAdmin) {
     return (
       <section className="container section">
         <h1 className="heading">Admin access denied</h1>
-
         <div className="notice">
           This account is authenticated, but it does not have the secure
           Firebase <code>admin: true</code> permission.
         </div>
-
         <p>
           Only authorised Moji's Heritage administrators can access the
           newsroom.
@@ -254,24 +226,18 @@ export function AdminGate() {
       </section>
     );
   }
-
   return <AdminLayout />;
 }
-
 function AdminLogin({ setup = false }) {
   const { login } = useAuth();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-
   async function handleSubmit(event) {
     event.preventDefault();
-
     setBusy(true);
     setError("");
-
     try {
       await login(email, password);
     } catch (loginError) {
@@ -281,27 +247,23 @@ function AdminLogin({ setup = false }) {
       setBusy(false);
     }
   }
-
   return (
     <section
       className="container section"
       style={{ maxWidth: 540, marginInline: "auto" }}
     >
       <h1 className="heading">Moji's Heritage Admin</h1>
-
       <p>
         Private newsroom for authorised administrators. Use the email address
         registered in Firebase Authentication and its Moji's Heritage
         password.
       </p>
-
       {setup && (
         <div className="notice">
           Firebase is not configured. Check the Firebase values in your
           project's <code>.env</code> file.
         </div>
       )}
-
       {error && (
         <div
           className="notice"
@@ -313,11 +275,9 @@ function AdminLogin({ setup = false }) {
           {error}
         </div>
       )}
-
       <form className="form card card-body" onSubmit={handleSubmit}>
         <div className="field">
           <label htmlFor="admin-email">Admin email</label>
-
           <input
             id="admin-email"
             type="email"
@@ -328,10 +288,8 @@ function AdminLogin({ setup = false }) {
             onChange={(event) => setEmail(event.target.value)}
           />
         </div>
-
         <div className="field">
           <label htmlFor="admin-password">Admin password</label>
-
           <input
             id="admin-password"
             type="password"
@@ -341,7 +299,6 @@ function AdminLogin({ setup = false }) {
             onChange={(event) => setPassword(event.target.value)}
           />
         </div>
-
         <button
           className="btn primary"
           type="submit"
@@ -350,7 +307,6 @@ function AdminLogin({ setup = false }) {
           {busy ? "Checking access..." : "Sign in securely"}
         </button>
       </form>
-
       <p className="muted" style={{ marginTop: "1rem" }}>
         This is a private administrator login. Public visitors do not need an
         account to use Moji's Heritage.
@@ -358,19 +314,15 @@ function AdminLogin({ setup = false }) {
     </section>
   );
 }
-
 function AdminLayout() {
   const { logout, user } = useAuth();
-
   const navClass = ({ isActive }) =>
     isActive ? "admin-nav-link active" : "admin-nav-link";
-
   return (
     <div className="admin-shell">
       <aside className="sidebar">
         <div>
           <h2 className="heading">Heritage Newsroom</h2>
-
           <p
             style={{
               fontSize: "0.82rem",
@@ -381,7 +333,6 @@ function AdminLayout() {
             {user?.email}
           </p>
         </div>
-
         <nav
           style={{
             display: "flex",
@@ -392,32 +343,24 @@ function AdminLayout() {
           <NavLink end className={navClass} to="/admin">
             Dashboard
           </NavLink>
-
           <NavLink className={navClass} to="/admin/posts">
             Stories & Posts
           </NavLink>
-
           <NavLink className={navClass} to="/admin/visit">
             Visit Planner
           </NavLink>
-
           <NavLink className={navClass} to="/admin/comments">
             Comments
           </NavLink>
-
           <NavLink className={navClass} to="/admin/settings">
             About & Site Settings
           </NavLink>
-
           <NavLink className={navClass} to="/admin/analytics">
             Analytics
           </NavLink>
         </nav>
-
         <hr />
-
         <Link to="/">View public website</Link>
-
         <button
           className="btn earth"
           type="button"
@@ -427,20 +370,17 @@ function AdminLayout() {
           Logout
         </button>
       </aside>
-
       <main className="admin-main">
         <Outlet />
       </main>
     </div>
   );
 }
-
 export function Dashboard() {
   const [posts, setPosts] = useState([]);
   const [listings, setListings] = useState([]);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     async function loadDashboard() {
       try {
@@ -449,7 +389,6 @@ export function Dashboard() {
           getAll("listings"),
           getAll("comments"),
         ]);
-
         setPosts(postData);
         setListings(listingData);
         setComments(commentData);
@@ -459,17 +398,13 @@ export function Dashboard() {
         setLoading(false);
       }
     }
-
     loadDashboard();
   }, []);
-
   const published = posts.filter((post) => post.isPublished).length;
   const drafts = posts.filter((post) => !post.isPublished).length;
-
   const pendingComments = comments.filter(
     (comment) => !comment.isApproved && !comment.isFlagged
   ).length;
-
   const recentComments = [...comments]
     .sort((a, b) => {
       const aTime = a.createdAt?.seconds || 0;
@@ -477,45 +412,36 @@ export function Dashboard() {
       return bTime - aTime;
     })
     .slice(0, 5);
-
   if (loading) {
     return <p>Loading newsroom...</p>;
   }
-
   return (
     <>
       <h1 className="heading">Dashboard</h1>
-
       <p>
         Manage Moji's Heritage stories, destinations, community discussions
         and public information from one newsroom.
       </p>
-
       <div className="grid cards">
         <div className="card card-body">
           <b>Published stories</b>
           <h2>{published}</h2>
         </div>
-
         <div className="card card-body">
           <b>Draft stories</b>
           <h2>{drafts}</h2>
         </div>
-
         <div className="card card-body">
           <b>Visit listings</b>
           <h2>{listings.length}</h2>
         </div>
-
         <div className="card card-body">
           <b>Pending comments</b>
           <h2>{pendingComments}</h2>
         </div>
       </div>
-
       <section className="section">
         <h2 className="heading">Quick actions</h2>
-
         <div
           style={{
             display: "flex",
@@ -526,20 +452,16 @@ export function Dashboard() {
           <Link className="btn primary" to="/admin/posts">
             Create a story
           </Link>
-
           <Link className="btn earth" to="/admin/visit">
             Add destination
           </Link>
-
           <Link className="btn" to="/admin/comments">
             Moderate comments
           </Link>
         </div>
       </section>
-
       <section className="section">
         <h2 className="heading">Recent comments</h2>
-
         {recentComments.length === 0 ? (
           <div className="card card-body">
             <p className="muted">No comments have been submitted yet.</p>
@@ -562,7 +484,6 @@ export function Dashboard() {
           </div>
         )}
       </section>
-
       <div className="notice">
         Phase 2 monetisation: promoted cultural destinations and sponsored
         heritage features can be managed here in a future release.
@@ -570,17 +491,15 @@ export function Dashboard() {
     </>
   );
 }
-
 export function PostsAdmin() {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(blankPost);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
-
+  const [statusFilter, setStatusFilter] = useState("all");
   async function load() {
     setLoading(true);
-
     try {
       const data = await getAll("posts");
       setItems(data);
@@ -591,64 +510,60 @@ export function PostsAdmin() {
       setLoading(false);
     }
   }
-
   useEffect(() => {
     load();
   }, []);
-
   function resetForm() {
     setForm(blankPost);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
   function editPost(post) {
     setForm({
       ...blankPost,
       ...post,
       scheduledDate: post.scheduledDate || "",
     });
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
   async function save(event) {
     event.preventDefault();
-
+    if (busy) return;
+    const publishing = Boolean(form.isPublished);
+    const data = {
+      title: String(form.title || "").trim(),
+      category: form.category,
+      ethnicGroup: String(form.ethnicGroup || "").trim(),
+      region: form.region,
+      summary: String(form.summary || "").trim(),
+      body: String(form.body || "").trim(),
+      coverImage: String(form.coverImage || "").trim(),
+      youtubeUrl: String(form.youtubeUrl || "").trim(),
+      isPublished: publishing,
+      scheduledDate: form.scheduledDate || null,
+      views: Number(form.views || 0),
+    };
+    if (!data.title && !data.body) {
+      alert("Add a title or some article content before saving a draft.");
+      return;
+    }
+    if (publishing && (!data.title || !data.summary || !data.body)) {
+      alert("A published story requires a title, summary and full article.");
+      return;
+    }
+    if (publishing && !window.confirm("Publish this story to the public website now?")) {
+      return;
+    }
     setBusy(true);
-
     try {
-      const data = {
-        title: form.title.trim(),
-        category: form.category,
-        ethnicGroup: form.ethnicGroup.trim(),
-        region: form.region,
-        summary: form.summary.trim(),
-        body: form.body.trim(),
-        coverImage: form.coverImage.trim(),
-        youtubeUrl: form.youtubeUrl.trim(),
-        isPublished: Boolean(form.isPublished),
-        scheduledDate: form.scheduledDate || null,
-        views: Number(form.views || 0),
-      };
-
-      if (!data.title) {
-        throw new Error("Please enter a story title.");
-      }
-
-      if (!data.body) {
-        throw new Error("Please enter the full story.");
-      }
-
-      if (form.id) {
+      const editing = Boolean(form.id);
+      if (editing) {
         await updateItem("posts", form.id, data);
       } else {
         await createItem("posts", data);
       }
-
       resetForm();
       await load();
-
-      alert(form.id ? "Story updated." : "Story created.");
+      alert(publishing ? "Story published." : editing ? "Draft updated." : "Draft saved privately.");
     } catch (error) {
       console.error(error);
       alert(error.message);
@@ -656,67 +571,64 @@ export function PostsAdmin() {
       setBusy(false);
     }
   }
-
   async function togglePublish(post) {
+    const publishing = !post.isPublished;
+    if (publishing && (!post.title?.trim() || !post.summary?.trim() || !post.body?.trim())) {
+      alert("Complete the title, summary and article before publishing.");
+      editPost(post);
+      return;
+    }
+    if (!window.confirm(publishing
+      ? `Publish "${post.title}" publicly?`
+      : `Unpublish "${post.title}" and return it to drafts?`)) return;
     try {
-      await updateItem("posts", post.id, {
-        isPublished: !post.isPublished,
-      });
-
+      await updateItem("posts", post.id, { isPublished: publishing });
       await load();
     } catch (error) {
+      console.error(error);
       alert(error.message);
     }
   }
-
   async function deletePost(post) {
     if (!window.confirm(`Delete "${post.title}" permanently?`)) {
       return;
     }
-
     try {
       await removeItem("posts", post.id);
-
       if (form.id === post.id) {
         resetForm();
       }
-
       await load();
     } catch (error) {
       alert(error.message);
     }
   }
-
-  const filteredItems = useMemo(() => {
-    if (filter === "all") return items;
-
-    return items.filter((item) => item.category === filter);
-  }, [items, filter]);
-
+  const filteredItems = useMemo(() => items.filter((item) => {
+    const categoryMatches = filter === "all" || item.category === filter;
+    const statusMatches = statusFilter === "all" ||
+      (statusFilter === "published" ? Boolean(item.isPublished) : !item.isPublished);
+    return categoryMatches && statusMatches;
+  }), [items, filter, statusFilter]);
+  const draftCount = items.filter((item) => !item.isPublished).length;
+  const publishedCount = items.filter((item) => item.isPublished).length;
   return (
     <>
       <h1 className="heading">Stories & Posts</h1>
-
       <p>
         Publish history, cultural discoveries, festivals, languages,
         traditional foods, heroes, documentaries and gallery stories without
         editing the website source code.
       </p>
-
       <div className="notice">
         Image uploads currently use externally hosted image URLs because
         Firebase Storage requires the Blaze billing plan. Paste a direct image
         URL below.
       </div>
-
       <form className="form card card-body" onSubmit={save}>
         <h2>{form.id ? "Edit story" : "Create new story"}</h2>
-
         <div className="field">
           <label>Title</label>
-
           <input
-            required
             value={form.title}
             onChange={(event) =>
               setForm({
@@ -726,11 +638,9 @@ export function PostsAdmin() {
             }
           />
         </div>
-
         <div className="filters">
           <div className="field">
             <label>Category</label>
-
             <select
               value={form.category}
               onChange={(event) =>
@@ -747,10 +657,8 @@ export function PostsAdmin() {
               ))}
             </select>
           </div>
-
           <div className="field">
             <label>Ethnic group</label>
-
             <input
               value={form.ethnicGroup}
               placeholder="e.g. Yoruba"
@@ -762,10 +670,8 @@ export function PostsAdmin() {
               }
             />
           </div>
-
           <div className="field">
             <label>Region</label>
-
             <select
               value={form.region}
               onChange={(event) =>
@@ -776,23 +682,18 @@ export function PostsAdmin() {
               }
             >
               <option value="">Select region</option>
-
               {REGIONS.map((region) => (
                 <option key={region} value={region}>
                   {region}
                 </option>
               ))}
-
               <option value="Nigeria">National / Nigeria</option>
             </select>
           </div>
         </div>
-
         <div className="field">
           <label>Summary</label>
-
           <textarea
-            required
             rows="3"
             placeholder="A short introduction shown on story cards."
             value={form.summary}
@@ -804,12 +705,9 @@ export function PostsAdmin() {
             }
           />
         </div>
-
         <div className="field">
           <label>Full story</label>
-
           <textarea
-            required
             rows="14"
             placeholder="Write the complete article here..."
             value={form.body}
@@ -821,10 +719,8 @@ export function PostsAdmin() {
             }
           />
         </div>
-
         <div className="field">
           <label>Cover image URL</label>
-
           <input
             type="url"
             placeholder="https://..."
@@ -836,14 +732,11 @@ export function PostsAdmin() {
               })
             }
           />
-
           <ImagePreview src={form.coverImage} alt={form.title} />
         </div>
-
         {form.category === "documentaries" && (
           <div className="field">
             <label>YouTube video URL</label>
-
             <input
               type="url"
               placeholder="https://www.youtube.com/watch?v=..."
@@ -857,10 +750,8 @@ export function PostsAdmin() {
             />
           </div>
         )}
-
         <div className="field">
           <label>Schedule publication date and time (optional)</label>
-
           <input
             type="datetime-local"
             value={form.scheduledDate || ""}
@@ -871,13 +762,11 @@ export function PostsAdmin() {
               })
             }
           />
-
           <small className="muted">
             Scheduling information is stored now. Automatic publication can be
             activated later with a scheduled backend function.
           </small>
         </div>
-
         <label
           style={{
             display: "flex",
@@ -895,10 +784,8 @@ export function PostsAdmin() {
               })
             }
           />
-
-          Publish immediately
+          Publish this story now
         </label>
-
         <div
           style={{
             display: "flex",
@@ -910,11 +797,10 @@ export function PostsAdmin() {
           <button className="btn primary" disabled={busy}>
             {busy
               ? "Saving..."
-              : form.id
-              ? "Save changes"
-              : "Create story"}
+              : form.isPublished
+              ? "Publish story"
+              : "Save draft"}
           </button>
-
           {form.id && (
             <button
               className="btn"
@@ -926,7 +812,6 @@ export function PostsAdmin() {
           )}
         </div>
       </form>
-
       <section className="section">
         <div
           style={{
@@ -938,21 +823,24 @@ export function PostsAdmin() {
           }}
         >
           <h2 className="heading">Existing content</h2>
-
           <select
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
           >
             <option value="all">All categories</option>
-
             {CATEGORIES.map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
             ))}
           </select>
+          <select aria-label="Filter by publication status" value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}>
+            <option value="all">All stories ({items.length})</option>
+            <option value="draft">Drafts ({draftCount})</option>
+            <option value="published">Published ({publishedCount})</option>
+          </select>
         </div>
-
         {loading ? (
           <p>Loading stories...</p>
         ) : filteredItems.length === 0 ? (
@@ -971,7 +859,6 @@ export function PostsAdmin() {
                   <th>Actions</th>
                 </tr>
               </thead>
-
               <tbody>
                 {filteredItems.map((post) => (
                   <tr key={post.id}>
@@ -980,15 +867,11 @@ export function PostsAdmin() {
                       <br />
                       <small>{post.ethnicGroup}</small>
                     </td>
-
                     <td>{categoryName(post.category)}</td>
-
                     <td>
                       <StatusBadge item={post} />
                     </td>
-
                     <td>{post.views || 0}</td>
-
                     <td>
                       <button
                         type="button"
@@ -996,14 +879,12 @@ export function PostsAdmin() {
                       >
                         Edit
                       </button>{" "}
-
                       <button
                         type="button"
                         onClick={() => togglePublish(post)}
                       >
                         {post.isPublished ? "Unpublish" : "Publish"}
                       </button>{" "}
-
                       <button
                         type="button"
                         onClick={() => deletePost(post)}
@@ -1021,16 +902,13 @@ export function PostsAdmin() {
     </>
   );
 }
-
 export function ListingsAdmin() {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(blankListing);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
-
   async function load() {
     setLoading(true);
-
     try {
       setItems(await getAll("listings"));
     } catch (error) {
@@ -1040,16 +918,13 @@ export function ListingsAdmin() {
       setLoading(false);
     }
   }
-
   useEffect(() => {
     load();
   }, []);
-
   function resetForm() {
     setForm(blankListing);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
   function editListing(item) {
     setForm({
       ...blankListing,
@@ -1061,31 +936,24 @@ export function ListingsAdmin() {
         : "",
       scheduledDate: item.scheduledDate || "",
     });
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
   async function save(event) {
     event.preventDefault();
-
     setBusy(true);
-
     try {
       const lat = Number(form.lat);
       const lng = Number(form.lng);
-
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
         throw new Error(
           "Please enter valid latitude and longitude values."
         );
       }
-
       const photos = form.photosText
         .split("\n")
         .map((value) => value.trim())
         .filter(Boolean)
         .slice(0, 8);
-
       const data = {
         name: form.name.trim(),
         state: form.state,
@@ -1106,16 +974,13 @@ export function ListingsAdmin() {
         isPublished: Boolean(form.isPublished),
         scheduledDate: form.scheduledDate || null,
       };
-
       if (form.id) {
         await updateItem("listings", form.id, data);
       } else {
         await createItem("listings", data);
       }
-
       resetForm();
       await load();
-
       alert(form.id ? "Listing updated." : "Listing created.");
     } catch (error) {
       console.error(error);
@@ -1124,59 +989,47 @@ export function ListingsAdmin() {
       setBusy(false);
     }
   }
-
   async function togglePublish(item) {
     try {
       await updateItem("listings", item.id, {
         isPublished: !item.isPublished,
       });
-
       await load();
     } catch (error) {
       alert(error.message);
     }
   }
-
   async function deleteListing(item) {
     if (!window.confirm(`Delete "${item.name}" permanently?`)) {
       return;
     }
-
     try {
       await removeItem("listings", item.id);
-
       if (form.id === item.id) {
         resetForm();
       }
-
       await load();
     } catch (error) {
       alert(error.message);
     }
   }
-
   const firstPreviewImage = form.photosText
     .split("\n")
     .map((value) => value.trim())
     .filter(Boolean)[0];
-
   return (
     <>
       <h1 className="heading">Visit Planner Management</h1>
-
       <p>
         Manage festivals, heritage sites, museums, cultural villages and other
         destinations displayed in the public Visit & Festival Planner.
       </p>
-
       <form className="form card card-body" onSubmit={save}>
         <h2>
           {form.id ? "Edit destination" : "Add destination or festival"}
         </h2>
-
         <div className="field">
           <label>Name</label>
-
           <input
             required
             value={form.name}
@@ -1188,11 +1041,9 @@ export function ListingsAdmin() {
             }
           />
         </div>
-
         <div className="filters">
           <div className="field">
             <label>State</label>
-
             <select
               required
               value={form.state}
@@ -1204,7 +1055,6 @@ export function ListingsAdmin() {
               }
             >
               <option value="">Select state</option>
-
               {STATES.map((state) => (
                 <option key={state} value={state}>
                   {state}
@@ -1212,10 +1062,8 @@ export function ListingsAdmin() {
               ))}
             </select>
           </div>
-
           <div className="field">
             <label>Region</label>
-
             <select
               required
               value={form.region}
@@ -1227,16 +1075,13 @@ export function ListingsAdmin() {
               }
             >
               <option value="">Select region</option>
-
               {REGIONS.map((region) => (
                 <option key={region}>{region}</option>
               ))}
             </select>
           </div>
-
           <div className="field">
             <label>Local Government Area</label>
-
             <input
               required
               value={form.localGovernmentArea}
@@ -1249,11 +1094,9 @@ export function ListingsAdmin() {
             />
           </div>
         </div>
-
         <div className="filters">
           <div className="field">
             <label>Ethnic group</label>
-
             <input
               required
               placeholder="e.g. Yoruba"
@@ -1266,10 +1109,8 @@ export function ListingsAdmin() {
               }
             />
           </div>
-
           <div className="field">
             <label>Festival / destination type</label>
-
             <select
               value={form.festivalType}
               onChange={(event) =>
@@ -1285,11 +1126,9 @@ export function ListingsAdmin() {
             </select>
           </div>
         </div>
-
         <div className="filters">
           <div className="field">
             <label>Start month</label>
-
             <select
               required
               value={form.startMonth}
@@ -1301,16 +1140,13 @@ export function ListingsAdmin() {
               }
             >
               <option value="">Select</option>
-
               {MONTHS.map((month) => (
                 <option key={month}>{month}</option>
               ))}
             </select>
           </div>
-
           <div className="field">
             <label>End month</label>
-
             <select
               required
               value={form.endMonth}
@@ -1322,18 +1158,15 @@ export function ListingsAdmin() {
               }
             >
               <option value="">Select</option>
-
               {MONTHS.map((month) => (
                 <option key={month}>{month}</option>
               ))}
             </select>
           </div>
         </div>
-
         <div className="filters">
           <div className="field">
             <label>GPS latitude</label>
-
             <input
               required
               type="number"
@@ -1348,10 +1181,8 @@ export function ListingsAdmin() {
               }
             />
           </div>
-
           <div className="field">
             <label>GPS longitude</label>
-
             <input
               required
               type="number"
@@ -1367,10 +1198,8 @@ export function ListingsAdmin() {
             />
           </div>
         </div>
-
         <div className="field">
           <label>Photo URLs — maximum 8</label>
-
           <textarea
             rows="5"
             placeholder={
@@ -1384,16 +1213,13 @@ export function ListingsAdmin() {
               })
             }
           />
-
           <ImagePreview
             src={firstPreviewImage}
             alt={form.name || "Destination preview"}
           />
         </div>
-
         <div className="field">
           <label>Description</label>
-
           <textarea
             required
             rows="9"
@@ -1406,10 +1232,8 @@ export function ListingsAdmin() {
             }
           />
         </div>
-
         <div className="field">
           <label>Cultural context</label>
-
           <textarea
             rows="6"
             placeholder="Explain the cultural significance of this festival or place."
@@ -1422,10 +1246,8 @@ export function ListingsAdmin() {
             }
           />
         </div>
-
         <div className="field">
           <label>Practical visit tips</label>
-
           <textarea
             rows="7"
             placeholder="Transport, best time to visit, dress code, what visitors should expect..."
@@ -1438,10 +1260,8 @@ export function ListingsAdmin() {
             }
           />
         </div>
-
         <div className="field">
           <label>Schedule publication (optional)</label>
-
           <input
             type="datetime-local"
             value={form.scheduledDate || ""}
@@ -1453,7 +1273,6 @@ export function ListingsAdmin() {
             }
           />
         </div>
-
         <label
           style={{
             display: "flex",
@@ -1471,10 +1290,8 @@ export function ListingsAdmin() {
               })
             }
           />
-
           Published
         </label>
-
         <div
           style={{
             display: "flex",
@@ -1490,7 +1307,6 @@ export function ListingsAdmin() {
               ? "Save changes"
               : "Create listing"}
           </button>
-
           {form.id && (
             <button
               className="btn"
@@ -1502,10 +1318,8 @@ export function ListingsAdmin() {
           )}
         </div>
       </form>
-
       <section className="section">
         <h2 className="heading">Existing Visit Planner listings</h2>
-
         {loading ? (
           <p>Loading listings...</p>
         ) : items.length === 0 ? (
@@ -1524,7 +1338,6 @@ export function ListingsAdmin() {
                   <th>Actions</th>
                 </tr>
               </thead>
-
               <tbody>
                 {items.map((item) => (
                   <tr key={item.id}>
@@ -1533,15 +1346,11 @@ export function ListingsAdmin() {
                       <br />
                       <small>{item.ethnicGroup}</small>
                     </td>
-
                     <td>{item.state}</td>
-
                     <td>{item.festivalType}</td>
-
                     <td>
                       <StatusBadge item={item} />
                     </td>
-
                     <td>
                       <button
                         type="button"
@@ -1549,14 +1358,12 @@ export function ListingsAdmin() {
                       >
                         Edit
                       </button>{" "}
-
                       <button
                         type="button"
                         onClick={() => togglePublish(item)}
                       >
                         {item.isPublished ? "Unpublish" : "Publish"}
                       </button>{" "}
-
                       <button
                         type="button"
                         onClick={() => deleteListing(item)}
@@ -1574,14 +1381,11 @@ export function ListingsAdmin() {
     </>
   );
 }
-
 export function CommentsAdmin() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-
   async function load() {
     setLoading(true);
-
     try {
       setItems(await getAll("comments"));
     } catch (error) {
@@ -1591,42 +1395,35 @@ export function CommentsAdmin() {
       setLoading(false);
     }
   }
-
   useEffect(() => {
     load();
   }, []);
-
   async function approve(comment) {
     try {
       await updateItem("comments", comment.id, {
         isApproved: true,
         isFlagged: false,
       });
-
       await load();
     } catch (error) {
       alert(error.message);
     }
   }
-
   async function flag(comment) {
     try {
       await updateItem("comments", comment.id, {
         isApproved: false,
         isFlagged: true,
       });
-
       await load();
     } catch (error) {
       alert(error.message);
     }
   }
-
   async function remove(comment) {
     if (!window.confirm("Delete this comment permanently?")) {
       return;
     }
-
     try {
       await removeItem("comments", comment.id);
       await load();
@@ -1634,16 +1431,13 @@ export function CommentsAdmin() {
       alert(error.message);
     }
   }
-
   return (
     <>
       <h1 className="heading">Comment Moderation</h1>
-
       <p>
         Review visitor opinions before they appear publicly on Moji's
         Heritage.
       </p>
-
       {loading ? (
         <p>Loading comments...</p>
       ) : items.length === 0 ? (
@@ -1663,20 +1457,15 @@ export function CommentsAdmin() {
                 <th>Actions</th>
               </tr>
             </thead>
-
             <tbody>
               {items.map((comment) => (
                 <tr key={comment.id}>
                   <td>{comment.displayName || "Visitor"}</td>
-
                   <td style={{ maxWidth: 420 }}>
                     {comment.text}
                   </td>
-
                   <td>{comment.postTitle || comment.postId || "—"}</td>
-
                   <td>{readableDate(comment.createdAt)}</td>
-
                   <td>
                     {comment.isFlagged
                       ? "Flagged"
@@ -1684,7 +1473,6 @@ export function CommentsAdmin() {
                       ? "Approved"
                       : "Pending"}
                   </td>
-
                   <td>
                     <button
                       type="button"
@@ -1692,14 +1480,12 @@ export function CommentsAdmin() {
                     >
                       Approve
                     </button>{" "}
-
                     <button
                       type="button"
                       onClick={() => flag(comment)}
                     >
                       Flag
                     </button>{" "}
-
                     <button
                       type="button"
                       onClick={() => remove(comment)}
@@ -1716,7 +1502,6 @@ export function CommentsAdmin() {
     </>
   );
 }
-
 export function SiteSettings() {
   const [form, setForm] = useState({
     aboutTitle: "About Moji's Heritage",
@@ -1726,15 +1511,12 @@ export function SiteSettings() {
     youtubeChannelUrl: "",
     contactEmail: "",
   });
-
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     async function load() {
       try {
         const settings = await getSiteSettings();
-
         setForm((current) => ({
           ...current,
           ...settings,
@@ -1745,18 +1527,13 @@ export function SiteSettings() {
         setLoading(false);
       }
     }
-
     load();
   }, []);
-
   async function save(event) {
     event.preventDefault();
-
     setBusy(true);
-
     try {
       await saveSiteSettings(form);
-
       alert(
         "About Us, Vision, Mission and website settings have been updated."
       );
@@ -1767,24 +1544,19 @@ export function SiteSettings() {
       setBusy(false);
     }
   }
-
   if (loading) {
     return <p>Loading website settings...</p>;
   }
-
   return (
     <>
       <h1 className="heading">About & Site Settings</h1>
-
       <p>
         Edit important public information without changing the React source
         code.
       </p>
-
       <form className="form card card-body" onSubmit={save}>
         <div className="field">
           <label>About page title</label>
-
           <input
             required
             value={form.aboutTitle}
@@ -1796,10 +1568,8 @@ export function SiteSettings() {
             }
           />
         </div>
-
         <div className="field">
           <label>About Us</label>
-
           <textarea
             required
             rows="10"
@@ -1812,10 +1582,8 @@ export function SiteSettings() {
             }
           />
         </div>
-
         <div className="field">
           <label>Our Vision</label>
-
           <textarea
             rows="5"
             value={form.vision}
@@ -1827,10 +1595,8 @@ export function SiteSettings() {
             }
           />
         </div>
-
         <div className="field">
           <label>Our Mission</label>
-
           <textarea
             required
             rows="5"
@@ -1843,10 +1609,8 @@ export function SiteSettings() {
             }
           />
         </div>
-
         <div className="field">
           <label>YouTube channel URL</label>
-
           <input
             type="url"
             placeholder="https://www.youtube.com/@..."
@@ -1859,10 +1623,8 @@ export function SiteSettings() {
             }
           />
         </div>
-
         <div className="field">
           <label>Public contact email</label>
-
           <input
             type="email"
             placeholder="hello@example.com"
@@ -1875,7 +1637,6 @@ export function SiteSettings() {
             }
           />
         </div>
-
         <button
           className="btn primary"
           disabled={busy}
@@ -1886,12 +1647,10 @@ export function SiteSettings() {
     </>
   );
 }
-
 export function Analytics() {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState([]);
   const [listings, setListings] = useState([]);
-
   useEffect(() => {
     Promise.all([
       getAll("posts"),
@@ -1905,11 +1664,9 @@ export function Analytics() {
       })
       .catch(console.error);
   }, []);
-
   const topPosts = [...posts]
     .sort((a, b) => Number(b.views || 0) - Number(a.views || 0))
     .slice(0, 5);
-
   const categoryCounts = CATEGORIES.map(([value, label]) => ({
     value,
     label,
@@ -1917,17 +1674,14 @@ export function Analytics() {
   }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
-
   return (
     <>
       <h1 className="heading">Analytics</h1>
-
       <div className="grid cards">
         <div className="card card-body">
           <b>Total stories</b>
           <h2>{posts.length}</h2>
         </div>
-
         <div className="card card-body">
           <b>Total story views</b>
           <h2>
@@ -1937,25 +1691,21 @@ export function Analytics() {
             )}
           </h2>
         </div>
-
         <div className="card card-body">
           <b>Comments</b>
           <h2>{comments.length}</h2>
         </div>
-
         <div className="card card-body">
           <b>Visit destinations</b>
           <h2>{listings.length}</h2>
         </div>
       </div>
-
       <div
         className="grid cards"
         style={{ marginTop: "1.5rem" }}
       >
         <div className="card card-body">
           <h2>Top 5 stories</h2>
-
           {topPosts.length === 0 ? (
             <p className="muted">No view data yet.</p>
           ) : (
@@ -1970,10 +1720,8 @@ export function Analytics() {
             </ol>
           )}
         </div>
-
         <div className="card card-body">
           <h2>Content distribution</h2>
-
           <ol>
             {categoryCounts.map((category) => (
               <li
@@ -1988,7 +1736,6 @@ export function Analytics() {
           </ol>
         </div>
       </div>
-
       <div className="notice" style={{ marginTop: "1.5rem" }}>
         Visit Planner search-filter analytics and registered-user statistics
         will become available when those events are recorded in Firestore.

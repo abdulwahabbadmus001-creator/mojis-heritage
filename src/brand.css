@@ -1,0 +1,79 @@
+/* Moji's Heritage brand: standalone mark, no surrounding badge or container */
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    text-decoration: none;
+    min-width: 0
+}
+
+.brand-mark {
+    display: block;
+    width: 40px;
+    height: 47px;
+    object-fit: contain;
+    flex-shrink: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none
+}
+
+.brand-name {
+    font: inherit;
+    color: inherit;
+    line-height: 1.1
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: .65rem
+}
+
+.footer-brand .brand-mark {
+    width: 46px;
+    height: 54px
+}
+
+@media(max-width:480px) {
+    .brand-mark {
+        width: 33px;
+        height: 39px
+    }
+
+    .brand-name {
+        font-size: .9em
+    }
+}
+
+/* Website loading screen, separate from Android's OS-controlled PWA splash */
+#heritage-startup {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: grid;
+    place-items: center;
+    background: #faf9f5;
+    transition: opacity .25s ease;
+    pointer-events: none
+}
+
+#heritage-startup img {
+    width: min(38vw, 155px);
+    height: auto;
+    display: block;
+    border: 0;
+    background: transparent;
+    box-shadow: none
+}
+
+#heritage-startup.is-ready {
+    opacity: 0
+}
+
+@media(prefers-reduced-motion:reduce) {
+    #heritage-startup {
+        transition: none
+    }
+}
