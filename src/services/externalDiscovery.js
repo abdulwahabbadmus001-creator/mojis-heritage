@@ -543,7 +543,7 @@ export function inferNigerianCultureAndState(text = "", primaryTitleAndCulture =
     if (/\b(ijaw|kalabari|bonny|nembe|opobo)\b/.test(lower)) {
       return { ethnicGroup: "Ijaw", state: "Bayelsa", region: "South South" };
     }
-    if (/\b(efik|calabar|nsibidi|ekpe)\b/.test(lower)) {
+    if (/\b(efik|calabar|nsibidi|ekpe|ikom)\b/.test(lower)) {
       return { ethnicGroup: "Efik", state: "Cross River", region: "South South" };
     }
     if (/\b(ibibio|annang|ekpo|ikot ekpene)\b/.test(lower)) {
@@ -551,6 +551,9 @@ export function inferNigerianCultureAndState(text = "", primaryTitleAndCulture =
     }
     if (/\b(tiv|kwagh-hir|benue)\b/.test(lower)) {
       return { ethnicGroup: "Tiv", state: "Benue", region: "North Central" };
+    }
+    if (/\b(dufuna|yobe)\b/.test(lower)) {
+      return { ethnicGroup: "Kanuri", state: "Yobe", region: "North East" };
     }
     if (/\b(kanuri|bornu|borno|lake chad)\b/.test(lower)) {
       return { ethnicGroup: "Kanuri", state: "Borno", region: "North East" };
@@ -720,6 +723,10 @@ export async function fetchFromWikipediaNigeriaAPI() {
     "Osun-Osogbo_Sacred_Grove",
     "Sukur_Cultural_Landscape",
     "Kingdom_of_Nri",
+    "Walls_of_Benin",
+    "Akwete_cloth",
+    "Dufuna_canoe",
+    "Ikom_monoliths",
   ].join("|");
 
   const url = `https://en.wikipedia.org/w/api.php?action=query&redirects=1&prop=extracts|pageimages|info&exintro=1&exlimit=max&explaintext=1&piprop=thumbnail&pilimit=max&pithumbsize=900&inprop=url&titles=${encodeURIComponent(

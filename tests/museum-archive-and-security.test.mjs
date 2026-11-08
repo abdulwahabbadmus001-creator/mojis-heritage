@@ -42,6 +42,7 @@ import {
   setProviderEnabled,
 } from "../src/services/externalDiscovery.js";
 import { filterPubliclyVisiblePosts } from "../src/services/content.js";
+import { mergeWithPreservedSnapshot } from "../scripts/sync-external-heritage.mjs";
 
 function createMemoryStorage() {
   const store = new Map();
@@ -519,8 +520,47 @@ test("9. Verified Met Museum Nigerian object IDs, scheduled sync artifacts, and 
   assert.equal(snapshot.projectId, "mojis-heritage-ae06c");
   assert.ok(Array.isArray(snapshot.records) && snapshot.records.length >= 15);
   assert.equal(snapshot.providerStatuses.met_museum.fetchedCount, 6);
-  assert.equal(snapshot.providerStatuses.wikipedia_nigeria.fetchedCount, 6);
+  assert.ok(snapshot.providerStatuses.wikipedia_nigeria.fetchedCount >= 6);
   assert.equal(snapshot.providerStatuses.wikimedia_commons.fetchedCount, 5);
+
+  // Verify partial API failure resilience and curator review preservation
+  const priorModeratedCommons = {
+    id: "ext-wikimedia_commons-commons-29327025",
+    externalId: "commons-29327025",
+    providerId: "wikimedia_commons",
+    title: "Bronze ornamental staff head, 9th century, Igbo Ukwu",
+    status: "Published",
+    isApprovedForPublic: true,
+    trustLevel: "curator_approved",
+    reviewerNotes: "Verified against NCMM Lagos catalogue.",
+    reviewedBy: "curator@mojisheritage.ng",
+  };
+  const freshCommonsUnreviewed = {
+    id: "ext-wikimedia_commons-commons-29327025",
+    externalId: "commons-29327025",
+    providerId: "wikimedia_commons",
+    title: "Bronze ornamental staff head, 9th century, Igbo Ukwu",
+    status: "Pending Review",
+    isApprovedForPublic: false,
+    trustLevel: "needs_review",
+  };
+  // Even if Met Museum fails (0 live items) and Commons returns fresh unreviewed item,
+  // mergeWithPreservedSnapshot keeps prior Met records AND preserves curator's Published decision
+  const mergedOnPartialOutage = mergeWithPreservedSnapshot(
+    [freshCommonsUnreviewed],
+    [priorModeratedCommons, ...snapshot.records],
+    VERIFIED_BASELINE_EXTERNAL_RECORDS
+  );
+  const preservedCommons = mergedOnPartialOutage.find(
+    (r) => r.externalId === "commons-29327025"
+  );
+  assert.equal(preservedCommons.status, "Published");
+  assert.equal(preservedCommons.isApprovedForPublic, true);
+  assert.equal(preservedCommons.reviewerNotes, "Verified against NCMM Lagos catalogue.");
+  assert.ok(
+    mergedOnPartialOutage.some((r) => r.providerId === "met_museum"),
+    "Previously verified Met Museum records must be preserved when Met API fails"
+  );
 
   const functionsIndex = fs.readFileSync(
     path.join(rootDir, "functions", "index.js"),
@@ -533,4 +573,5 @@ test("9. Verified Met Museum Nigerian object IDs, scheduled sync artifacts, and 
     "utf8"
   );
   assert.match(workflowYaml, /cron: "0 4 \* \* \*"/);
+  assert.match(workflowYaml, /FirebaseExtended\/action-hosting-deploy@v0/);
 });

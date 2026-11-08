@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  checks: write
 
 jobs:
   sync-heritage-sources:
@@ -44,10 +45,13 @@ jobs:
             echo "No snapshot changes detected."
           fi
 
-      - name: Build and deploy to Firebase Hosting (when FIREBASE_TOKEN is configured)
-        if: ${{ env.FIREBASE_TOKEN != '' }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: |
-          npm run build
-          npx firebase-tools deploy --only hosting --project mojis-heritage-ae06c --token "$FIREBASE_TOKEN"
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Deploy updated snapshot and site to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MOJIS_HERITAGE_AE06C }}
+          channelId: live
+          projectId: mojis-heritage-ae06c

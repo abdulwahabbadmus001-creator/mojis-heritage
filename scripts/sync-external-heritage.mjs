@@ -7,9 +7,9 @@
  *   3. Wikimedia Commons API (Open-licensed Nigerian heritage media files -> Pending Review)
  *
  * Validates Nigerian cultural relevance and open licences, deduplicates by fingerprint,
+ * preserves previously verified records and moderation decisions when any API fails,
  * and writes `public/external-discoveries-snapshot.json` so automated background runs
- * (e.g., via GitHub Actions cron) keep the archive updated without requiring anyone
- * to open the browser or click an admin button.
+ * (via GitHub Actions cron / workflow_dispatch) keep the archive updated automatically.
  */
 
 import fs from "node:fs/promises";
@@ -17,6 +17,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   VERIFIED_BASELINE_EXTERNAL_RECORDS,
+  computeDiscoveryFingerprint,
   deduplicateDiscoveryRecords,
   fetchFromWikipediaNigeriaAPI,
   fetchFromMetMuseumNigeriaAPI,
@@ -30,7 +31,59 @@ const SNAPSHOT_PATH = path.resolve(
   "../public/external-discoveries-snapshot.json"
 );
 
-async function runScheduledSync() {
+/**
+ * Merges newly fetched live records with existing snapshot records and baseline records:
+ *  - Preserves curator moderation decisions (`status`, `isApprovedForPublic`, `trustLevel`, `reviewerNotes`)
+ *    from `existingSnapshotRecords`.
+ *  - Preserves all previously verified records from `existingSnapshotRecords` when one or more external APIs fail.
+ *  - Eliminates duplicates using `deduplicateDiscoveryRecords`.
+ */
+export function mergeWithPreservedSnapshot(
+  liveFetched = [],
+  existingSnapshotRecords = [],
+  baselineRecords = VERIFIED_BASELINE_EXTERNAL_RECORDS
+) {
+  const existingById = new Map();
+  const existingByFp = new Map();
+  for (const prior of existingSnapshotRecords) {
+    if (!prior || typeof prior !== "object") continue;
+    if (prior.id && !existingById.has(prior.id)) {
+      existingById.set(prior.id, prior);
+    }
+    const fp = prior.fingerprint || computeDiscoveryFingerprint(prior);
+    if (fp && !existingByFp.has(fp)) {
+      existingByFp.set(fp, prior);
+    }
+  }
+
+  const enrichedLive = (Array.isArray(liveFetched) ? liveFetched : []).map(
+    (item) => {
+      const fp = computeDiscoveryFingerprint(item);
+      const prior = existingById.get(item.id) || existingByFp.get(fp);
+      if (!prior) return item;
+      return {
+        ...item,
+        status: prior.status || item.status,
+        isApprovedForPublic:
+          typeof prior.isApprovedForPublic === "boolean"
+            ? prior.isApprovedForPublic
+            : item.isApprovedForPublic,
+        trustLevel: prior.trustLevel || item.trustLevel,
+        reviewerNotes: prior.reviewerNotes || item.reviewerNotes || "",
+        reviewedBy: prior.reviewedBy || item.reviewedBy || "",
+        reviewedAt: prior.reviewedAt || item.reviewedAt || null,
+      };
+    }
+  );
+
+  return deduplicateDiscoveryRecords([
+    ...enrichedLive,
+    ...existingSnapshotRecords,
+    ...baselineRecords,
+  ]);
+}
+
+export async function runScheduledSync() {
   const startedAt = new Date().toISOString();
   const providerStatuses = {};
   const errors = [];
@@ -101,11 +154,11 @@ async function runScheduledSync() {
     existingSnapshotRecords = [];
   }
 
-  const combined = deduplicateDiscoveryRecords([
-    ...liveFetched,
-    ...existingSnapshotRecords,
-    ...VERIFIED_BASELINE_EXTERNAL_RECORDS,
-  ]);
+  const combined = mergeWithPreservedSnapshot(
+    liveFetched,
+    existingSnapshotRecords,
+    VERIFIED_BASELINE_EXTERNAL_RECORDS
+  );
 
   const snapshotPayload = {
     schemaVersion: "1.0",
@@ -131,9 +184,12 @@ async function runScheduledSync() {
   console.log(
     `[SYNC COMPLETE] Wrote ${combined.length} deduplicated Nigerian heritage records (${snapshotPayload.publishedCount} Published, ${snapshotPayload.pendingReviewCount} Pending Review) to ${SNAPSHOT_PATH}`
   );
+  return snapshotPayload;
 }
 
-runScheduledSync().catch((err) => {
-  console.error("[SYNC FATAL]", err);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  runScheduledSync().catch((err) => {
+    console.error("[SYNC FATAL]", err);
+    process.exitCode = 1;
+  });
+}
