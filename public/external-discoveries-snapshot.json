@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0",
   "projectId": "mojis-heritage-ae06c",
-  "lastScheduledSyncAt": "2026-11-08T21:04:16.424Z",
-  "totalRecords": 21,
-  "publishedCount": 15,
+  "lastScheduledSyncAt": "2026-11-08T21:46:16.873Z",
+  "totalRecords": 25,
+  "publishedCount": 19,
   "pendingReviewCount": 6,
   "providerStatuses": {
     "met_museum": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-08T21:04:20.968Z",
+      "lastSyncAt": "2026-11-08T21:46:18.007Z",
       "fetchedCount": 6,
       "publishedCount": 6,
       "pendingReviewCount": 0,
@@ -16,15 +16,15 @@
     },
     "wikipedia_nigeria": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-08T21:04:22.617Z",
-      "fetchedCount": 6,
-      "publishedCount": 6,
+      "lastSyncAt": "2026-11-08T21:46:18.475Z",
+      "fetchedCount": 10,
+      "publishedCount": 10,
       "pendingReviewCount": 0,
       "error": null
     },
     "wikimedia_commons": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-08T21:04:23.408Z",
+      "lastSyncAt": "2026-11-08T21:46:19.337Z",
       "fetchedCount": 5,
       "publishedCount": 0,
       "pendingReviewCount": 5,
@@ -67,7 +67,10 @@
         "ijebu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:18.521Z",
+      "retrievedAt": "2026-11-08T21:46:17.293Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "met_museum::316516::1991.17.45"
     },
     {
@@ -104,7 +107,10 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:19.099Z",
+      "retrievedAt": "2026-11-08T21:46:17.407Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "met_museum::316520::1991.17.49"
     },
     {
@@ -141,7 +147,10 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:19.444Z",
+      "retrievedAt": "2026-11-08T21:46:17.500Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "met_museum::316521::1991.17.50"
     },
     {
@@ -178,7 +187,10 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:20.293Z",
+      "retrievedAt": "2026-11-08T21:46:17.753Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "met_museum::316522::1991.17.51"
     },
     {
@@ -215,7 +227,10 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:20.642Z",
+      "retrievedAt": "2026-11-08T21:46:17.891Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "met_museum::316524::1991.17.53"
     },
     {
@@ -252,7 +267,10 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:20.968Z",
+      "retrievedAt": "2026-11-08T21:46:18.007Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "met_museum::316525::1991.17.54"
     },
     {
@@ -289,7 +307,10 @@
         "ife"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:22.612Z",
+      "retrievedAt": "2026-11-08T21:46:18.472Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikipedia_nigeria::wiki-1108889::"
     },
     {
@@ -330,7 +351,10 @@
         "nok culture"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:22.614Z",
+      "retrievedAt": "2026-11-08T21:46:18.473Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikipedia_nigeria::wiki-1889558::"
     },
     {
@@ -369,7 +393,10 @@
         "ikenga"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:22.614Z",
+      "retrievedAt": "2026-11-08T21:46:18.473Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikipedia_nigeria::wiki-3590424::"
     },
     {
@@ -406,7 +433,10 @@
         "sukur"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:22.615Z",
+      "retrievedAt": "2026-11-08T21:46:18.473Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikipedia_nigeria::wiki-3871075::"
     },
     {
@@ -443,7 +473,10 @@
         "osun-osogbo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:22.616Z",
+      "retrievedAt": "2026-11-08T21:46:18.473Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikipedia_nigeria::wiki-3871315::"
     },
     {
@@ -481,8 +514,158 @@
         "igala"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:22.617Z",
+      "retrievedAt": "2026-11-08T21:46:18.474Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikipedia_nigeria::wiki-14283861::"
+    },
+    {
+      "id": "ext-wikipedia_nigeria-wiki-14946771",
+      "externalId": "wiki-14946771",
+      "providerId": "wikipedia_nigeria",
+      "providerName": "Wikipedia Heritage Archive",
+      "title": "Ikom monoliths",
+      "summary": "The Ikom monoliths are a series of volcanic-stone monoliths from the area of Ikom, Cross River State, Nigeria. The Ejagham may have engraved the monoliths around 200 CE. The monoliths are also called Akwaanshi or Atal among the Ejagham people.",
+      "body": "The Ikom monoliths are a series of volcanic-stone monoliths from the area of Ikom, Cross River State, Nigeria. The Ejagham may have engraved the monoliths around 200 CE. The monoliths are also called Akwaanshi or Atal among the Ejagham people.",
+      "ethnicGroup": "Efik",
+      "state": "Cross River",
+      "region": "South South",
+      "locality": "",
+      "historicalPeriod": "Imperial Benin, Oyo, Kanem-Bornu & Hausa States (16th – 18th Century)",
+      "classification": "Copper-Alloy & Bronze Casting",
+      "material": "",
+      "dimensions": "",
+      "accessionNumber": "",
+      "custodian": "Wikipedia & Wikimedia Foundation Open Knowledge Archive",
+      "creator": "Nigerian Master Artisan",
+      "coverImage": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Ikom_monolith%2C_Calabar_Museum.jpg/960px-Ikom_monolith%2C_Calabar_Museum.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Ikom_monoliths",
+      "licence": "CC BY-SA 4.0 · Wikipedia Contributors",
+      "licenceVerified": true,
+      "trustLevel": "trusted_public",
+      "status": "Published",
+      "isApprovedForPublic": true,
+      "relevanceScore": 10,
+      "relevanceSignals": [
+        "nigeria",
+        "cross river",
+        "efik"
+      ],
+      "rejectionReason": null,
+      "retrievedAt": "2026-11-08T21:46:18.474Z",
+      "fingerprint": "wikipedia_nigeria::wiki-14946771::"
+    },
+    {
+      "id": "ext-wikipedia_nigeria-wiki-15246195",
+      "externalId": "wiki-15246195",
+      "providerId": "wikipedia_nigeria",
+      "providerName": "Wikipedia Heritage Archive",
+      "title": "Dufuna canoe",
+      "summary": "The Dufuna canoe is the world's second-oldest known boat.  It is a dugout canoe discovered in 1987 by a Fulani herdsman a few kilometres from the village of Dufuna in the Fune Local Government Area, not far from the Komadugu Gana River, in Yobe State, Nigeria. Radiocarbon dating",
+      "body": "The Dufuna canoe is the world's second-oldest known boat.  It is a dugout canoe discovered in 1987 by a Fulani herdsman a few kilometres from the village of Dufuna in the Fune Local Government Area, not far from the Komadugu Gana River, in Yobe State, Nigeria. Radiocarbon dating of a sample of charcoal found near the site dates the canoe at 8,500 to 8,000 years old, linking the site to Lake Chad. The canoe is 8.4 metres (28 ft) long and is 0.5 metres (1 ft 8 in) tall at it largest point. It is currently located in Damaturu, Nigeria.",
+      "ethnicGroup": "Kanuri",
+      "state": "Yobe",
+      "region": "North East",
+      "locality": "",
+      "historicalPeriod": "Imperial Benin, Oyo, Kanem-Bornu & Hausa States (16th – 18th Century)",
+      "classification": "Copper-Alloy & Bronze Casting",
+      "material": "",
+      "dimensions": "",
+      "accessionNumber": "",
+      "custodian": "Wikipedia & Wikimedia Foundation Open Knowledge Archive",
+      "creator": "Nigerian Master Artisan",
+      "coverImage": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Dufuna-canoe-theafricanhistory-com_PicsArt_03-07-09.24.07.jpg/960px-Dufuna-canoe-theafricanhistory-com_PicsArt_03-07-09.24.07.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Dufuna_canoe",
+      "licence": "CC BY-SA 4.0 · Wikipedia Contributors",
+      "licenceVerified": true,
+      "trustLevel": "trusted_public",
+      "status": "Published",
+      "isApprovedForPublic": true,
+      "relevanceScore": 12,
+      "relevanceSignals": [
+        "nigeria",
+        "yobe",
+        "fulani",
+        "kanuri"
+      ],
+      "rejectionReason": null,
+      "retrievedAt": "2026-11-08T21:46:18.474Z",
+      "fingerprint": "wikipedia_nigeria::wiki-15246195::"
+    },
+    {
+      "id": "ext-wikipedia_nigeria-wiki-39000924",
+      "externalId": "wiki-39000924",
+      "providerId": "wikipedia_nigeria",
+      "providerName": "Wikipedia Heritage Archive",
+      "title": "Akwete cloth",
+      "summary": "Akwete cloth  is a hand woven textile produced in Igboland for which the town of Akwete, also known as Ndoki, both which the cloth was named after in Abia state, Nigeria is famous. Alternative names include \"Mkpuru Akwete\" and \"Akwete fabric\". This traditional Igbo weaving proces",
+      "body": "Akwete cloth  is a hand woven textile produced in Igboland for which the town of Akwete, also known as Ndoki, both which the cloth was named after in Abia state, Nigeria is famous. Alternative names include \"Mkpuru Akwete\" and \"Akwete fabric\". This traditional Igbo weaving processes sisal, hemp, raffia, cotton or other fibres into finished products. While the coarse raffia materials are used by masquerades and in the past as headgear for warriors among other uses, the hemp material was used to weave towels, ropes and handbags. The more comfortable and colorful spun cotton is used to weave cloth for everyday wearing. Akwete cloths contain many motifs. Today, Ndoki women continue to produce Akwete cloth for a wide, global market.",
+      "ethnicGroup": "Igbo",
+      "state": "Anambra",
+      "region": "South East",
+      "locality": "",
+      "historicalPeriod": "Imperial Benin, Oyo, Kanem-Bornu & Hausa States (16th – 18th Century)",
+      "classification": "Copper-Alloy & Bronze Casting",
+      "material": "",
+      "dimensions": "",
+      "accessionNumber": "",
+      "custodian": "Wikipedia & Wikimedia Foundation Open Knowledge Archive",
+      "creator": "Nigerian Master Artisan",
+      "coverImage": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/African_woman_handweaving_akwete_cloth_01.jpg/960px-African_woman_handweaving_akwete_cloth_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Akwete_cloth",
+      "licence": "CC BY-SA 4.0 · Wikipedia Contributors",
+      "licenceVerified": true,
+      "trustLevel": "trusted_public",
+      "status": "Published",
+      "isApprovedForPublic": true,
+      "relevanceScore": 12,
+      "relevanceSignals": [
+        "nigeria",
+        "abia",
+        "anambra",
+        "igbo",
+        "akwete"
+      ],
+      "rejectionReason": null,
+      "retrievedAt": "2026-11-08T21:46:18.474Z",
+      "fingerprint": "wikipedia_nigeria::wiki-39000924::"
+    },
+    {
+      "id": "ext-wikipedia_nigeria-wiki-74671314",
+      "externalId": "wiki-74671314",
+      "providerId": "wikipedia_nigeria",
+      "providerName": "Wikipedia Heritage Archive",
+      "title": "Benin Moat",
+      "summary": "The Benin Moat (Edo: Iyanuwo), also known as the Benin City Iya, the Inner City Iya of Benin or the Wall of Benin, is a large earthwork within Benin City in Nigeria's Edo state, part of which formerly encircled the city at the time of the Benin Empire.",
+      "body": "The Benin Moat (Edo: Iyanuwo), also known as the Benin City Iya, the Inner City Iya of Benin or the Wall of Benin, is a large earthwork within Benin City in Nigeria's Edo state, part of which formerly encircled the city at the time of the Benin Empire.",
+      "ethnicGroup": "Edo",
+      "state": "Edo",
+      "region": "South South",
+      "locality": "",
+      "historicalPeriod": "Imperial Benin, Oyo, Kanem-Bornu & Hausa States (16th – 18th Century)",
+      "classification": "Copper-Alloy & Bronze Casting",
+      "material": "",
+      "dimensions": "",
+      "accessionNumber": "",
+      "custodian": "Wikipedia & Wikimedia Foundation Open Knowledge Archive",
+      "creator": "Nigerian Master Artisan",
+      "coverImage": "",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Benin_Moat",
+      "licence": "CC BY-SA 4.0 · Wikipedia Contributors",
+      "licenceVerified": true,
+      "trustLevel": "trusted_public",
+      "status": "Published",
+      "isApprovedForPublic": true,
+      "relevanceScore": 12,
+      "relevanceSignals": [
+        "nigeria",
+        "edo",
+        "benin city"
+      ],
+      "rejectionReason": null,
+      "retrievedAt": "2026-11-08T21:46:18.475Z",
+      "fingerprint": "wikipedia_nigeria::wiki-74671314::"
     },
     {
       "id": "ext-wikimedia_commons-commons-29327025",
@@ -520,7 +703,10 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:23.406Z",
+      "retrievedAt": "2026-11-08T21:46:19.336Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikimedia_commons::commons-29327025::"
     },
     {
@@ -557,7 +743,10 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:23.407Z",
+      "retrievedAt": "2026-11-08T21:46:19.337Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikimedia_commons::commons-135535674::"
     },
     {
@@ -595,7 +784,10 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:23.407Z",
+      "retrievedAt": "2026-11-08T21:46:19.337Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikimedia_commons::commons-135536001::"
     },
     {
@@ -634,7 +826,10 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:23.407Z",
+      "retrievedAt": "2026-11-08T21:46:19.337Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikimedia_commons::commons-183272953::"
     },
     {
@@ -669,7 +864,10 @@
         "edo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-08T21:04:23.408Z",
+      "retrievedAt": "2026-11-08T21:46:19.337Z",
+      "reviewerNotes": "",
+      "reviewedBy": "",
+      "reviewedAt": null,
       "fingerprint": "wikimedia_commons::commons-201730553::"
     },
     {
