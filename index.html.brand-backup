@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <!-- ==================================================
+         PRIMARY SEO
+    =================================================== -->
+
+    <title>
+      Moji's Heritage | Discover Nigeria's Living Heritage
+    </title>
+
+    <meta
+      name="description"
+      content="Discover Nigeria's cultures, histories, festivals, traditional foods, languages, heroes, heritage sites and living traditions through Moji's Heritage."
+    />
+
+    <meta
+      name="keywords"
+      content="Nigeria culture, Nigerian heritage, Nigerian history, Yoruba culture, Igbo culture, Hausa culture, Nigerian festivals, traditional Nigerian food, Nigerian languages, African history, Moji's Heritage"
+    />
+
+    <meta
+      name="author"
+      content="Moji's Heritage"
+    />
+
+    <meta
+      name="robots"
+      content="index, follow"
+    />
+
+    <!-- ==================================================
+         BRAND / BROWSER
+    =================================================== -->
+
+    <meta
+      name="theme-color"
+      content="#1a5c2e"
+    />
+
+    <meta
+      name="application-name"
+      content="Moji's Heritage"
+    />
+
+    <meta
+      name="apple-mobile-web-app-title"
+      content="Moji's Heritage"
+    />
+
+    <!-- ==================================================
+         FAVICON
+    =================================================== -->
+
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon.svg"
+    />
+
+    <link
+      rel="alternate icon"
+      href="/favicon.svg"
+    />
+
+    <!-- ==================================================
+         OPEN GRAPH
+         WhatsApp / Facebook / LinkedIn etc.
+    =================================================== -->
+
+    <meta
+      property="og:type"
+      content="website"
+    />
+
+    <meta
+      property="og:site_name"
+      content="Moji's Heritage"
+    />
+
+    <meta
+      property="og:title"
+      content="Moji's Heritage | Discover Nigeria's Living Heritage"
+    />
+
+    <meta
+      property="og:description"
+      content="Explore Nigeria's cultures, histories, festivals, foods, languages, people and heritage places."
+    />
+
+    <meta
+      property="og:image"
+      content="/social-preview.svg"
+    />
+
+    <meta
+      property="og:image:alt"
+      content="Moji's Heritage — Discover Nigeria's Living Heritage"
+    />
+
+    <!-- ==================================================
+         X / TWITTER
+    =================================================== -->
+
+    <meta
+      name="twitter:card"
+      content="summary_large_image"
+    />
+
+    <meta
+      name="twitter:title"
+      content="Moji's Heritage | Discover Nigeria's Living Heritage"
+    />
+
+    <meta
+      name="twitter:description"
+      content="Explore Nigeria's cultures, histories, festivals, foods, languages, people and heritage places."
+    />
+
+    <meta
+      name="twitter:image"
+      content="/social-preview.svg"
+    />
+
+    <!-- ==================================================
+         PERFORMANCE
+    =================================================== -->
+
+    <meta
+      http-equiv="X-UA-Compatible"
+      content="IE=edge"
+    />
+
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+
+  </head>
+
+  <body>
+    <noscript>
+      Moji's Heritage requires JavaScript to provide the full
+      interactive experience.
+    </noscript>
+
+    <div id="root"></div>
+
+    <script
+      type="module"
+      src="/src/main.jsx"
+    ></script>
+  </body>
+</html>
