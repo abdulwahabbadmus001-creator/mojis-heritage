@@ -446,13 +446,16 @@ export async function getAllSubmissionsForAdmin(options = {}) {
 }
 
 /**
- * Public-safe query: returns ONLY submissions that have been both Approved AND Published.
- * Pending, Submitted, Draft, Needs Correction, Approved-but-unpublished, Rejected, Archived,
- * and Withdrawn submissions are strictly excluded.
+ * Public-safe query: returns ONLY submissions from local/session state that have been
+ * both Approved AND Published.
+ * IMPORTANT: Never queries the private `submissions` Firestore collection from public pages
+ * (since `submissions` is strictly `allow read: if admin()` in firestore.rules, and
+ * admin-published submissions are written directly to the public `posts` collection).
  */
 export async function getPublishedCommunitySubmissions(options = {}) {
-  const all = await getAllSubmissionsForAdmin(options);
-  return all.filter((item) => isSubmissionPubliclyVisible(item));
+  const storage = options.storage;
+  const localItems = readLocalArray(SUBMISSIONS_STORAGE_KEY, storage);
+  return localItems.filter((item) => isSubmissionPubliclyVisible(item));
 }
 
 async function persistSubmissionUpdate(updatedRecord, options = {}) {

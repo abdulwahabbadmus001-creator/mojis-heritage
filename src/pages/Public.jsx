@@ -72,7 +72,8 @@ import {
 } from "../data/knowledgeGraph";
 
 import {
-  getPublicExternalDiscoveries
+  getPublicExternalDiscoveries,
+  mapExternalDiscoveryToPost
 } from "../services/externalDiscovery";
 
 import {
@@ -2054,6 +2055,8 @@ export function CultureDetail() {
 
   const [posts, setPosts] =
     useState([]);
+  const [externalRecords, setExternalRecords] =
+    useState([]);
 
   const culture =
     getCultureBySlug(slug);
@@ -2062,6 +2065,10 @@ export function CultureDetail() {
     getPosts()
       .then(setPosts)
       .catch(() => setPosts([]));
+
+    getPublicExternalDiscoveries()
+      .then(setExternalRecords)
+      .catch(() => setExternalRecords([]));
   }, []);
 
   if (!culture) {
@@ -2086,6 +2093,22 @@ export function CultureDetail() {
         normalise(
           culture.name
         ).includes(group)
+      );
+    });
+
+  const relatedExternal =
+    externalRecords.filter((ext) => {
+      const group = normalise(ext.ethnicGroup);
+      const cultureName = normalise(culture.name);
+      const cultureSlug = normalise(culture.slug);
+      return (
+        (group &&
+          (group.includes(cultureName) ||
+            cultureName.includes(group) ||
+            group.includes(cultureSlug))) ||
+        (ext.state &&
+          Array.isArray(culture.states) &&
+          culture.states.some((st) => normalise(st) === normalise(ext.state)))
       );
     });
 
@@ -2197,7 +2220,7 @@ export function CultureDetail() {
             )}
         </div>
 
-        {related.length === 0 && (
+        {related.length === 0 && relatedExternal.length === 0 && (
           <EmptyState
             title={`The ${culture.name} collection is growing`}
             text="Contribute verified artifact records, oral histories, or festival descriptions for administrator review."
@@ -2242,6 +2265,68 @@ export function CultureDetail() {
               </section>
             );
           }
+        )}
+
+        {relatedExternal.length > 0 && (
+          <section className="culture-section" style={{ marginTop: "2.5rem" }}>
+            <SectionHeading
+              eyebrow="External Open-Access Discovery"
+              title={`Verified Museum & Archive Records (${culture.name})`}
+              text={`Open-access Nigerian cultural heritage records connected to ${culture.name} and associated states, attributed to their custodian institutions.`}
+            />
+
+            <div className="grid cards">
+              {relatedExternal.map((ext) => (
+                <article key={ext.id} className="card post-card">
+                  {ext.coverImage && (
+                    <Link to={`/post/${ext.id}`} className="post-image-link">
+                      <img
+                        loading="lazy"
+                        src={ext.coverImage}
+                        alt={ext.title}
+                        className="post-card-image"
+                      />
+                    </Link>
+                  )}
+                  <div className="card-body">
+                    <div className="post-card-tags">
+                      <span className="tag">
+                        External Discovery · {ext.providerName}
+                      </span>
+                      {ext.state && <span className="tag soft">{ext.state}</span>}
+                    </div>
+
+                    <h3 className="heading post-card-title">
+                      <Link to={`/post/${ext.id}`}>{ext.title}</Link>
+                    </h3>
+
+                    <p className="muted">{ext.summary}</p>
+
+                    <div className="post-card-meta">
+                      <span>{ext.classification || "Museum Artifact"}</span>
+                      <span>{ext.licence}</span>
+                    </div>
+
+                    <div className="post-card-actions" style={{ gap: "0.5rem", flexWrap: "wrap" }}>
+                      <Link className="btn primary" to={`/post/${ext.id}`}>
+                        Open Archival Dossier
+                      </Link>
+                      {ext.sourceUrl && (
+                        <a
+                          className="btn outline"
+                          href={ext.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Museum Source ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
         )}
       </section>
     </>
@@ -2580,22 +2665,34 @@ export function Post() {
   } = useSavedPosts();
 
   useEffect(() => {
-    getPosts()
-      .then((posts) => {
+    Promise.all([getPosts(), getPublicExternalDiscoveries()])
+      .then(([posts, externalRecords]) => {
         setAllPosts(posts);
 
-        const found =
+        const foundPost =
           posts.find(
             (item) =>
               item.id === id
           );
 
-        setPost(found || null);
-
-        if (found) {
+        if (foundPost) {
+          setPost(foundPost);
           bumpView(id);
-          addRecentlyViewed(found);
+          addRecentlyViewed(foundPost);
+          return;
         }
+
+        const foundExternal = (externalRecords || []).find(
+          (item) => item.id === id
+        );
+        if (foundExternal) {
+          const mappedExternal = mapExternalDiscoveryToPost(foundExternal);
+          setPost(mappedExternal);
+          addRecentlyViewed(mappedExternal);
+          return;
+        }
+
+        setPost(null);
       })
       .catch(() => {
         setPost(null);

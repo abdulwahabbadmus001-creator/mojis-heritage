@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test tests/consent-and-theme.test.mjs tests/museum-archive-and-security.test.mjs",
+    "sync:heritage": "node scripts/sync-external-heritage.mjs",
     "set-admin": "node scripts/set-admin.cjs"
   },
   "dependencies": {

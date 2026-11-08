@@ -2,6 +2,8 @@ import {
   collection,
   doc,
   getDocs,
+  query,
+  where,
   setDoc,
   updateDoc,
   serverTimestamp,
@@ -18,7 +20,7 @@ export const PROVIDER_REGISTRY = [
     id: "met_museum",
     name: "The Metropolitan Museum of Art Open Access API",
     shortName: "The Met Open Access",
-    endpoint: "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=Nigeria",
+    endpoint: "https://collectionapi.metmuseum.org/public/collection/v1/objects",
     documentationUrl: "https://metmuseum.github.io/",
     defaultLicence: "CC0 1.0 Universal (Public Domain Dedication)",
     trustTier: "tier_1_museum",
@@ -26,7 +28,7 @@ export const PROVIDER_REGISTRY = [
     rateLimitMs: 1200,
     timeoutMs: 8000,
     description:
-      "Public-domain Nigerian museum artifacts (Court of Benin, Ife, Yoruba, Igbo, Nupe, Nok, Ijaw) with verified accession numbers, dimensions, media, and provenance.",
+      "Public-domain Nigerian museum artifacts (Court of Benin, Ijebu Yoruba, Edo brasses and aquamaniles) retrieved from The Met Open Access Objects API with verified accession numbers, dimensions, media, and provenance.",
   },
   {
     id: "wikipedia_nigeria",
@@ -158,48 +160,15 @@ const VERIFIED_OPEN_LICENCE_PATTERNS = [
  */
 export const VERIFIED_BASELINE_EXTERNAL_RECORDS = [
   {
-    id: "ext-met-310750",
-    externalId: "310750",
+    id: "ext-met-316524",
+    externalId: "316524",
     providerId: "met_museum",
     providerName: "The Met Open Access",
-    title: "Queen Mother Pendant Mask: Iyoba (Court of Benin, 16th Century)",
+    title: "Leopard Aquamanile (Court of Benin, Edo peoples, 16th–19th Century)",
     summary:
-      "Carved ivory, iron, and copper royal hip-ornament mask created in the 16th century at the Court of Benin (Edo State, Nigeria) honouring Queen Mother Idia, mother of Oba Esigie.",
+      "Royal lost-wax cast brass ceremonial water-pouring vessel in the form of a leopard—emblem of the Oba of Benin—used in palace hand-washing rituals in Benin City, Edo State.",
     body:
-      "This iconic 16th-century ivory pendant mask from the Court of Benin (Edo State, Nigeria) honours Queen Mother Idia, the first Iyoba of Uselu and political adviser to Oba Esigie. Carved from elephant ivory with inlaid iron pupils and a openwork tiara of Portuguese trader figures and mudfish—symbolising the Oba's dual dominion over land and sea (Olokun)—it represents the pinnacle of the royal Igbesanmwan ivory-carvers guild in Benin City.",
-    ethnicGroup: "Edo",
-    state: "Edo",
-    region: "South South",
-    locality: "Benin City, Edo State",
-    historicalPeriod: "Imperial Benin, Oyo, Kanem-Bornu & Hausa States (16th – 18th Century)",
-    classification: "Royal Regalia & Ivory Carving",
-    material: "Ivory, iron, copper",
-    dimensions: "H. 23.8 × W. 12.7 × D. 8.3 cm",
-    accessionNumber: "1978.412.323",
-    custodian: "The Metropolitan Museum of Art (Michael C. Rockefeller Memorial Collection)",
-    creator: "Royal Igbesanmwan Guild Artist (Edo peoples, Court of Benin)",
-    coverImage:
-      "https://images.metmuseum.org/CRDImages/ao/web-large/DP231460.jpg",
-    sourceUrl: "https://www.metmuseum.org/art/collection/search/310750",
-    licence: "CC0 1.0 Public Domain · The Metropolitan Museum of Art Open Access",
-    licenceVerified: true,
-    trustLevel: "trusted_public",
-    status: "Published",
-    isApprovedForPublic: true,
-    relevanceScore: 9,
-    relevanceSignals: ["Nigeria", "Court of Benin", "Edo", "Queen Idia", "16th Century"],
-    retrievedAt: "2026-04-01T00:00:00.000Z",
-  },
-  {
-    id: "ext-met-316522",
-    externalId: "316522",
-    providerId: "met_museum",
-    providerName: "The Met Open Access",
-    title: "Brass Plaque: Equestrian Oba and Attendants (Court of Benin, 16th–17th Century)",
-    summary:
-      "Lost-wax cast brass architectural relief plaque from the Royal Palace at Benin City depicting an equestrian figure flanked by court attendants against an incised river-leaf background.",
-    body:
-      "Cast by the hereditary Igun Eronmwon brass-casters guild in Benin City (Edo State, Nigeria), rectangular brass relief plaques once sheathed the wooden pillars of the Oba's palace. The high-relief casting captures hierarchical court protocol, coral-beaded regalia, ceremonial weaponry, and the incised quatrefoil river-leaf motif (ebe-amen) sacred to Olokun.",
+      "Cast in brass by the royal Igun Eronmwon guild at the Court of Benin (Edo State, Nigeria), this leopard aquamanile served as a ritual vessel for pouring water over the Oba's hands during palace ceremonies such as Igue and Ugie Erha Oba. In Benin royal iconography, the leopard (Ekpen) is the king of the forest and the zoomorphic counterpart to the Oba's authority.",
     ethnicGroup: "Edo",
     state: "Edo",
     region: "South South",
@@ -207,13 +176,46 @@ export const VERIFIED_BASELINE_EXTERNAL_RECORDS = [
     historicalPeriod: "Imperial Benin, Oyo, Kanem-Bornu & Hausa States (16th – 18th Century)",
     classification: "Copper-Alloy & Bronze Casting",
     material: "Brass (lost-wax cast copper alloy)",
-    dimensions: "H. 49.5 × W. 41.9 × D. 11.4 cm",
-    accessionNumber: "1991.17.5",
+    dimensions: "H. 6 3/4 × W. 2 5/8 × D. 8 5/8 in. (17.2 × 6.7 × 21.9 cm)",
+    accessionNumber: "1991.17.53",
+    custodian: "The Metropolitan Museum of Art (Gift of Mr. and Mrs. Klaus G. Perls, 1991)",
+    creator: "Royal Igun Eronmwon Guild Artist (Edo peoples, Court of Benin, Nigeria)",
+    coverImage:
+      "https://images.metmuseum.org/CRDImages/ao/web-large/DT6570.jpg",
+    sourceUrl: "https://www.metmuseum.org/art/collection/search/316524",
+    licence: "CC0 1.0 Public Domain · The Metropolitan Museum of Art Open Access",
+    licenceVerified: true,
+    trustLevel: "trusted_public",
+    status: "Published",
+    isApprovedForPublic: true,
+    relevanceScore: 9,
+    relevanceSignals: ["Nigeria", "Court of Benin", "Edo", "Igun Eronmwon", "16th–19th Century"],
+    retrievedAt: "2026-04-01T00:00:00.000Z",
+  },
+  {
+    id: "ext-met-316521",
+    externalId: "316521",
+    providerId: "met_museum",
+    providerName: "The Met Open Access",
+    title: "Pectoral Ornament with Face (Court of Benin, Edo peoples, 15th–17th Century)",
+    summary:
+      "Early classical brass and iron royal pectoral mask from the Court of Benin (Edo State, Nigeria), worn as an emblem of chiefly rank and ceremonial authority.",
+    body:
+      "Created between the 15th and 17th centuries in Benin City (Edo State, Nigeria), this cast brass pectoral mask with inlaid iron features was worn at the chest during court ceremonies and diplomatic receptions. It belongs to the celebrated corpus of early Benin royal metalwork preserved in the Perls Collection.",
+    ethnicGroup: "Edo",
+    state: "Edo",
+    region: "South South",
+    locality: "Benin City, Edo State",
+    historicalPeriod: "Imperial Benin, Oyo, Kanem-Bornu & Hausa States (16th – 18th Century)",
+    classification: "Copper-Alloy & Bronze Casting",
+    material: "Brass, iron",
+    dimensions: "H. 7 1/2 × W. 4 5/8 × D. 1 3/4 in. (19.1 × 11.8 × 4.5 cm)",
+    accessionNumber: "1991.17.50",
     custodian: "The Metropolitan Museum of Art (Gift of Mr. and Mrs. Klaus G. Perls, 1991)",
     creator: "Igun Eronmwon Guild Master (Court of Benin, Nigeria)",
     coverImage:
-      "https://images.metmuseum.org/CRDImages/ao/web-large/DP-15973-001.jpg",
-    sourceUrl: "https://www.metmuseum.org/art/collection/search/316522",
+      "https://images.metmuseum.org/CRDImages/ao/web-large/DT6569.jpg",
+    sourceUrl: "https://www.metmuseum.org/art/collection/search/316521",
     licence: "CC0 1.0 Public Domain · The Metropolitan Museum of Art Open Access",
     licenceVerified: true,
     trustLevel: "trusted_public",
@@ -513,56 +515,74 @@ export function deduplicateDiscoveryRecords(records = []) {
   return unique;
 }
 
-export function inferNigerianCultureAndState(text = "") {
-  const lower = String(text || "").toLowerCase();
-  if (/\b(benin|edo|bini|idia|oba|igun)\b/.test(lower)) {
-    return { ethnicGroup: "Edo", state: "Edo", region: "South South" };
-  }
-  if (/\b(ife|yoruba|oyo|osun|osogbo|ijebu|gelede|egungun|aso-oke|adire)\b/.test(lower)) {
-    return { ethnicGroup: "Yoruba", state: "Osun", region: "South West" };
-  }
-  if (/\b(igbo-ukwu|igbo|nri|anambra|ikenga|akwete|nsukka|onitsha)\b/.test(lower)) {
-    return { ethnicGroup: "Igbo", state: "Anambra", region: "South East" };
-  }
-  if (/\b(hausa|kano|zaria|zazzau|katsina|daura|durbar)\b/.test(lower)) {
-    return { ethnicGroup: "Hausa", state: "Kano", region: "North West" };
-  }
-  if (/\b(nok|jaba)\b/.test(lower)) {
-    return { ethnicGroup: "Gbagyi", state: "Kaduna", region: "North Central" };
-  }
-  if (/\b(nupe|tsoede|bida)\b/.test(lower)) {
-    return { ethnicGroup: "Nupe", state: "Niger", region: "North Central" };
-  }
-  if (/\b(ijaw|kalabari|bonny|nembe|opobo)\b/.test(lower)) {
-    return { ethnicGroup: "Ijaw", state: "Bayelsa", region: "South South" };
-  }
-  if (/\b(efik|calabar|nsibidi|ekpe)\b/.test(lower)) {
-    return { ethnicGroup: "Efik", state: "Cross River", region: "South South" };
-  }
-  if (/\b(ibibio|annang|ekpo|ikot ekpene)\b/.test(lower)) {
-    return { ethnicGroup: "Ibibio", state: "Akwa Ibom", region: "South South" };
-  }
-  if (/\b(tiv|kwagh-hir|benue)\b/.test(lower)) {
-    return { ethnicGroup: "Tiv", state: "Benue", region: "North Central" };
-  }
-  if (/\b(kanuri|bornu|borno|lake chad)\b/.test(lower)) {
-    return { ethnicGroup: "Kanuri", state: "Borno", region: "North East" };
-  }
-  if (/\b(urhobo|ivri|iphri)\b/.test(lower)) {
-    return { ethnicGroup: "Urhobo", state: "Delta", region: "South South" };
-  }
-  if (/\b(itsekiri|warri)\b/.test(lower)) {
-    return { ethnicGroup: "Itsekiri", state: "Delta", region: "South South" };
-  }
-  if (/\b(fulani|sokoto|adamawa|sukur)\b/.test(lower)) {
-    return { ethnicGroup: "Fulani", state: "Sokoto", region: "North West" };
-  }
-  return { ethnicGroup: "Multiple", state: "Nigeria", region: "Nigeria" };
+export function inferNigerianCultureAndState(text = "", primaryTitleAndCulture = "") {
+  const matchSource = (str) => {
+    const lower = String(str || "").toLowerCase();
+    if (!lower) return null;
+    if (/\b(nok|jaba)\b/.test(lower)) {
+      return { ethnicGroup: "Gbagyi", state: "Kaduna", region: "North Central" };
+    }
+    if (/\b(igbo-ukwu|igbo ukwu|nri|anambra|ikenga|akwete|nsukka|onitsha|igbo)\b/.test(lower)) {
+      return { ethnicGroup: "Igbo", state: "Anambra", region: "South East" };
+    }
+    if (/\b(sukur|madagali|adamawa)\b/.test(lower)) {
+      return { ethnicGroup: "Fulani", state: "Adamawa", region: "North East" };
+    }
+    if (/\b(ife|yoruba|oyo|osun|osogbo|ijebu|gelede|egungun|aso-oke|adire)\b/.test(lower)) {
+      return { ethnicGroup: "Yoruba", state: "Osun", region: "South West" };
+    }
+    if (/\b(benin|edo|bini|idia|oba|igun)\b/.test(lower)) {
+      return { ethnicGroup: "Edo", state: "Edo", region: "South South" };
+    }
+    if (/\b(hausa|kano|zaria|zazzau|katsina|daura|durbar)\b/.test(lower)) {
+      return { ethnicGroup: "Hausa", state: "Kano", region: "North West" };
+    }
+    if (/\b(nupe|tsoede|bida)\b/.test(lower)) {
+      return { ethnicGroup: "Nupe", state: "Niger", region: "North Central" };
+    }
+    if (/\b(ijaw|kalabari|bonny|nembe|opobo)\b/.test(lower)) {
+      return { ethnicGroup: "Ijaw", state: "Bayelsa", region: "South South" };
+    }
+    if (/\b(efik|calabar|nsibidi|ekpe)\b/.test(lower)) {
+      return { ethnicGroup: "Efik", state: "Cross River", region: "South South" };
+    }
+    if (/\b(ibibio|annang|ekpo|ikot ekpene)\b/.test(lower)) {
+      return { ethnicGroup: "Ibibio", state: "Akwa Ibom", region: "South South" };
+    }
+    if (/\b(tiv|kwagh-hir|benue)\b/.test(lower)) {
+      return { ethnicGroup: "Tiv", state: "Benue", region: "North Central" };
+    }
+    if (/\b(kanuri|bornu|borno|lake chad)\b/.test(lower)) {
+      return { ethnicGroup: "Kanuri", state: "Borno", region: "North East" };
+    }
+    if (/\b(urhobo|ivri|iphri)\b/.test(lower)) {
+      return { ethnicGroup: "Urhobo", state: "Delta", region: "South South" };
+    }
+    if (/\b(itsekiri|warri)\b/.test(lower)) {
+      return { ethnicGroup: "Itsekiri", state: "Delta", region: "South South" };
+    }
+    if (/\b(fulani|sokoto)\b/.test(lower)) {
+      return { ethnicGroup: "Fulani", state: "Sokoto", region: "North West" };
+    }
+    return null;
+  };
+
+  return (
+    matchSource(primaryTitleAndCulture) ||
+    matchSource(text) || {
+      ethnicGroup: "Multiple",
+      state: "Nigeria",
+      region: "Nigeria",
+    }
+  );
 }
 
 export function normalizeExternalRecord(raw = {}, providerId = "external") {
   const provider =
     PROVIDER_REGISTRY.find((p) => p.id === providerId) || PROVIDER_REGISTRY[0];
+  const primaryContext = [raw.title, raw.culture, raw.locality]
+    .filter(Boolean)
+    .join(" ");
   const combinedContext = [
     raw.title,
     raw.culture,
@@ -575,7 +595,7 @@ export function normalizeExternalRecord(raw = {}, providerId = "external") {
     .filter(Boolean)
     .join(" ");
 
-  const inferred = inferNigerianCultureAndState(combinedContext);
+  const inferred = inferNigerianCultureAndState(combinedContext, primaryContext);
   const relevance = evaluateNigerianRelevance({
     ...raw,
     ethnicGroup: raw.ethnicGroup || inferred.ethnicGroup,
@@ -661,15 +681,20 @@ export function normalizeExternalRecord(raw = {}, providerId = "external") {
 
 async function fetchWithTimeoutAndRetry(url, { timeoutMs = 7500, retries = 1 } = {}) {
   let lastError = null;
+  const headers = {
+    Accept: "application/json",
+  };
+  if (typeof window === "undefined") {
+    headers["User-Agent"] =
+      "MojisHeritageDigitalMuseum/1.0 (https://mojis-heritage-ae06c.web.app; Nigerian Cultural Archive)";
+  }
   for (let attempt = 0; attempt <= retries; attempt++) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await fetch(url, {
         signal: controller.signal,
-        headers: {
-          Accept: "application/json",
-        },
+        headers,
       });
       clearTimeout(timer);
       if (!response.ok) {
@@ -697,7 +722,7 @@ export async function fetchFromWikipediaNigeriaAPI() {
     "Kingdom_of_Nri",
   ].join("|");
 
-  const url = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages|info&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=900&inprop=url&titles=${encodeURIComponent(
+  const url = `https://en.wikipedia.org/w/api.php?action=query&redirects=1&prop=extracts|pageimages|info&exintro=1&exlimit=max&explaintext=1&piprop=thumbnail&pilimit=max&pithumbsize=900&inprop=url&titles=${encodeURIComponent(
     titles
   )}&format=json&origin=*`;
 
@@ -725,23 +750,30 @@ export async function fetchFromWikipediaNigeriaAPI() {
     .filter((item) => item.relevanceScore >= 2);
 }
 
+/**
+ * Curated list of verified Nigerian public-domain object IDs in The Metropolitan Museum
+ * of Art Open Access collection (Court of Benin & Yoruba Ijebu kingdoms, Nigeria).
+ * Note: The Met's `/v1/objects/{objectID}` endpoint is active (HTTP 200), whereas
+ * `/v1/search` returns HTTP 410 Gone on unauthenticated automated clients.
+ */
+export const VERIFIED_MET_NIGERIA_OBJECT_IDS = [
+  316516, // Masquerade Element: Human Face (Yoruba peoples, Ijebu group, Nigeria, 1991.17.45)
+  316520, // Hip ornament with face (Edo peoples, Court of Benin, Nigeria, 1991.17.49)
+  316521, // Pectoral ornament with face (Edo peoples, Court of Benin, Nigeria, 1991.17.50)
+  316522, // Waist pendant with crocodile head (Edo peoples, Court of Benin, Nigeria, 1991.17.51)
+  316524, // Leopard Aquamanile (Edo peoples, Court of Benin, Nigeria, 1991.17.53)
+  316525, // Rooster (Edo peoples, Court of Benin, Nigeria, 1991.17.54)
+];
+
 export async function fetchFromMetMuseumNigeriaAPI() {
-  const searchUrl =
-    "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=Nigeria";
-  const searchData = await fetchWithTimeoutAndRetry(searchUrl, {
-    timeoutMs: 7500,
-    retries: 1,
-  });
-  const objectIDs = Array.isArray(searchData?.objectIDs)
-    ? searchData.objectIDs.slice(0, 5)
-    : [];
+  const objectIDs = VERIFIED_MET_NIGERIA_OBJECT_IDS;
 
   const records = [];
   for (const objectID of objectIDs) {
     try {
       const detail = await fetchWithTimeoutAndRetry(
         `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`,
-        { timeoutMs: 6500, retries: 0 }
+        { timeoutMs: 6500, retries: 1 }
       );
       if (!detail || !detail.isPublicDomain) continue;
       const normalized = normalizeExternalRecord(
@@ -950,8 +982,87 @@ export function getSyncStatusSummary(
   }
 }
 
+let snapshotMemoryCache = null;
+
+async function loadStaticSnapshotRecords() {
+  if (snapshotMemoryCache !== null) return snapshotMemoryCache;
+  if (typeof window === "undefined" || typeof fetch !== "function") {
+    snapshotMemoryCache = [];
+    return snapshotMemoryCache;
+  }
+  try {
+    const response = await fetch("/external-discoveries-snapshot.json", {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) {
+      snapshotMemoryCache = [];
+      return snapshotMemoryCache;
+    }
+    const payload = await response.json();
+    const list = Array.isArray(payload?.records) ? payload.records : [];
+    snapshotMemoryCache = list;
+    return snapshotMemoryCache;
+  } catch {
+    snapshotMemoryCache = [];
+    return snapshotMemoryCache;
+  }
+}
+
+export function mapExternalDiscoveryToPost(ext = {}) {
+  return {
+    id: ext.id,
+    title: ext.title,
+    category: "heritage",
+    ethnicGroup: ext.ethnicGroup || "Nigerian Heritage",
+    state: ext.state || "Nigeria",
+    locality: ext.locality || "",
+    region: ext.region || "Nigeria",
+    historicalPeriod: ext.historicalPeriod || "Precolonial & Historic Era",
+    classification: ext.classification || "Archival & Museum Record",
+    custodian: ext.custodian || ext.providerName || "External Open-Access Archive",
+    creator: ext.creator || "Nigerian Master Artisan",
+    material: ext.material || "",
+    dimensions: ext.dimensions || "",
+    accessionNumber: ext.accessionNumber || ext.externalId || "",
+    summary: ext.summary || "",
+    body: [
+      ext.body || ext.summary || "",
+      "",
+      "## Archival Provenance & Open-Access Attribution",
+      `- **Source Institution / Provider:** ${ext.providerName || "Open-Access Museum API"}`,
+      ext.custodian ? `- **Custodian / Repository:** ${ext.custodian}` : "",
+      ext.accessionNumber ? `- **Accession / Catalogue Reference:** ${ext.accessionNumber}` : "",
+      ext.material ? `- **Material / Medium:** ${ext.material}` : "",
+      ext.dimensions ? `- **Dimensions:** ${ext.dimensions}` : "",
+      `- **Licence & Reuse Terms:** ${ext.licence || "Open Access"}`,
+      ext.sourceUrl ? `- **Original Museum / Archive Record:** [${ext.sourceUrl}](${ext.sourceUrl})` : "",
+    ]
+      .filter((line) => line !== "")
+      .join("\n"),
+    coverImage:
+      ext.coverImage ||
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Igbo_Ukwu_vessel.jpg/800px-Igbo_Ukwu_vessel.jpg",
+    sourceType: "external_api",
+    sourceLabel: `External Discovery · ${ext.providerName || "Open-Access API"}`,
+    verificationStatus: `Verified Open-Access Museum Record (${ext.providerName || "External API"})`,
+    sourceUrl: ext.sourceUrl || "",
+    licence: ext.licence || "Open Access",
+    citations: [
+      `${ext.providerName || "External Archive"}: "${ext.title}" (${ext.licence || "Open Access"}). Retrieved from ${ext.sourceUrl || "Open-Access API"}.`,
+    ],
+    status: ext.status || "Published",
+    isApproved: Boolean(ext.isApprovedForPublic),
+    isPublished: ext.status === "Published" && Boolean(ext.isApprovedForPublic),
+    updatedAt: ext.retrievedAt || "2026-04-01T00:00:00.000Z",
+  };
+}
+
 export async function getAllDiscoveryRecords() {
-  const localRecords = getCachedDiscoveryRecords();
+  const snapshotRecords = await loadStaticSnapshotRecords();
+  const localRecords = deduplicateDiscoveryRecords([
+    ...getCachedDiscoveryRecords(),
+    ...snapshotRecords,
+  ]);
   if (!isFirebaseConfigured || !db) {
     return localRecords;
   }
@@ -976,8 +1087,29 @@ export async function getPublicExternalDiscoveries() {
       .filter((p) => p.enabled)
       .map((p) => p.id)
   );
-  const all = await getAllDiscoveryRecords();
-  return all.filter(
+  const snapshotRecords = await loadStaticSnapshotRecords();
+  let records = deduplicateDiscoveryRecords([
+    ...getCachedDiscoveryRecords(),
+    ...snapshotRecords,
+  ]);
+  if (isFirebaseConfigured && db) {
+    try {
+      // Strictly query only Published & Approved records to match firestore.rules
+      const publicQuery = query(
+        collection(db, "externalDiscoveries"),
+        where("status", "==", "Published"),
+        where("isApprovedForPublic", "==", true)
+      );
+      const snap = await getDocs(publicQuery);
+      if (!snap.empty) {
+        const remotePublic = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        records = deduplicateDiscoveryRecords([...remotePublic, ...records]);
+      }
+    } catch {
+      // Fallback cleanly to cached verified baseline records
+    }
+  }
+  return records.filter(
     (item) =>
       item &&
       enabledProviders.has(item.providerId) &&

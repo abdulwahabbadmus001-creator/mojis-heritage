@@ -88,7 +88,8 @@ export async function getPosts() {
         query(collection(db, "posts"), where("isPublished", "==", true))
       );
       if (!s.empty) {
-        basePosts = s.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const remotePosts = s.docs.map((d) => ({ id: d.id, ...d.data() }));
+        basePosts = [...remotePosts, ...seedPosts];
       }
     } catch {
       basePosts = seedPosts;

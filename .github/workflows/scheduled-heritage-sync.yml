@@ -1,0 +1,53 @@
+name: Scheduled Nigerian Heritage API Sync
+
+on:
+  schedule:
+    # Runs automatically every day at 04:00 UTC (05:00 WAT Africa/Lagos)
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-heritage-sources:
+    name: Sync External Open-Access Nigerian Heritage APIs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Execute scheduled external API sync
+        run: node scripts/sync-external-heritage.mjs
+
+      - name: Run automated security and archive verification tests
+        run: npm test
+
+      - name: Commit updated discovery snapshot if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet public/external-discoveries-snapshot.json; then
+            git add public/external-discoveries-snapshot.json
+            git commit -m "chore(sync): automated Nigerian heritage external API snapshot refresh [skip ci]"
+            git push
+          else
+            echo "No snapshot changes detected."
+          fi
+
+      - name: Build and deploy to Firebase Hosting (when FIREBASE_TOKEN is configured)
+        if: ${{ env.FIREBASE_TOKEN != '' }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          npm run build
+          npx firebase-tools deploy --only hosting --project mojis-heritage-ae06c --token "$FIREBASE_TOKEN"

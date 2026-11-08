@@ -30,7 +30,8 @@ Thumbs.db
 .idea/
 
 # Local Firebase admin scripts
-scripts/
+scripts/*
+!scripts/sync-external-heritage.mjs
 functions/set-admin.cjs
 
 # Firebase service-account credentials

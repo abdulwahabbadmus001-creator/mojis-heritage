@@ -36,6 +36,8 @@ import {
   computeDiscoveryFingerprint,
   isLicenceOpenAndPermissible,
   VERIFIED_BASELINE_EXTERNAL_RECORDS,
+  VERIFIED_MET_NIGERIA_OBJECT_IDS,
+  mapExternalDiscoveryToPost,
   getProviderConfigs,
   setProviderEnabled,
 } from "../src/services/externalDiscovery.js";
@@ -461,4 +463,74 @@ test("8. Security rules, FOUC theme script, and SEO files are properly hardened"
 
   // Verify robots.txt disallows /admin
   assert.match(robotsTxt, /Disallow: \/admin/);
+});
+
+test("9. Verified Met Museum Nigerian object IDs, scheduled sync artifacts, and standalone archival dossier mapping", () => {
+  assert.equal(VERIFIED_MET_NIGERIA_OBJECT_IDS.length, 6);
+  assert.deepEqual(VERIFIED_MET_NIGERIA_OBJECT_IDS, [
+    316516, 316520, 316521, 316522, 316524, 316525,
+  ]);
+
+  // Verify primary-title-first cultural inference prevents secondary body mentions from misclassifying
+  const nriNormalized = normalizeExternalRecord(
+    {
+      externalId: "wiki-14283861",
+      title: "Kingdom of Nri",
+      summary: "Medieval Igbo polity in Anambra State.",
+      body: "The Kingdom of Nri in Igboland later interacted with the Benin and Igala kingdoms.",
+      sourceUrl: "https://en.wikipedia.org/wiki/Kingdom_of_Nri",
+      licence: "CC BY-SA 4.0",
+    },
+    "wikipedia_nigeria"
+  );
+  assert.equal(nriNormalized.ethnicGroup, "Igbo");
+  assert.equal(nriNormalized.state, "Anambra");
+
+  const nokNormalized = normalizeExternalRecord(
+    {
+      externalId: "wiki-1889558",
+      title: "Nok culture",
+      summary: "Early terracotta tradition in Kaduna State.",
+      body: "Nok terracotta preceded later traditions in Ile Ife and Benin.",
+      sourceUrl: "https://en.wikipedia.org/wiki/Nok_culture",
+      licence: "CC BY-SA 4.0",
+    },
+    "wikipedia_nigeria"
+  );
+  assert.equal(nokNormalized.ethnicGroup, "Gbagyi");
+  assert.equal(nokNormalized.state, "Kaduna");
+
+  // Standalone archival post mapping allows external discoveries to render at /post/:id without a manually written article
+  const mappedDossier = mapExternalDiscoveryToPost(
+    VERIFIED_BASELINE_EXTERNAL_RECORDS[0]
+  );
+  assert.equal(mappedDossier.id, VERIFIED_BASELINE_EXTERNAL_RECORDS[0].id);
+  assert.equal(mappedDossier.isPublished, true);
+  assert.match(mappedDossier.sourceLabel, /^External Discovery · /);
+  assert.match(mappedDossier.body, /Archival Provenance & Open-Access Attribution/);
+
+  // Verify scheduled sync snapshot and background automation files exist
+  const rootDir = process.cwd();
+  const snapshotRaw = fs.readFileSync(
+    path.join(rootDir, "public", "external-discoveries-snapshot.json"),
+    "utf8"
+  );
+  const snapshot = JSON.parse(snapshotRaw);
+  assert.equal(snapshot.projectId, "mojis-heritage-ae06c");
+  assert.ok(Array.isArray(snapshot.records) && snapshot.records.length >= 15);
+  assert.equal(snapshot.providerStatuses.met_museum.fetchedCount, 6);
+  assert.equal(snapshot.providerStatuses.wikipedia_nigeria.fetchedCount, 6);
+  assert.equal(snapshot.providerStatuses.wikimedia_commons.fetchedCount, 5);
+
+  const functionsIndex = fs.readFileSync(
+    path.join(rootDir, "functions", "index.js"),
+    "utf8"
+  );
+  assert.match(functionsIndex, /exports\.scheduledHeritageDiscoverySync = onSchedule/);
+
+  const workflowYaml = fs.readFileSync(
+    path.join(rootDir, ".github", "workflows", "scheduled-heritage-sync.yml"),
+    "utf8"
+  );
+  assert.match(workflowYaml, /cron: "0 4 \* \* \*"/);
 });
