@@ -761,3 +761,33 @@ test("12. URL scheme sanitization, contribution rate limiting, HTTP security hea
   );
   assert.match(viteConfig, /sourcemap:\s*false/);
 });
+
+test("13. Universal multi-device responsiveness for public site and admin newsroom (280px foldables to 1440px+ desktops)", () => {
+  const rootDir = process.cwd();
+  const indexHtml = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
+  const indexCss = fs.readFileSync(
+    path.join(rootDir, "src", "index.css"),
+    "utf8"
+  );
+
+  // 1. Viewport meta tag supports notched iPhones, curved screens, and foldables
+  assert.match(indexHtml, /viewport-fit=cover/);
+
+  // 2. Global horizontal overflow protection and responsive .filters / .cards grids
+  assert.match(indexCss, /overflow-x:\s*hidden/);
+  assert.match(
+    indexCss,
+    /\.filters\s*\{[\s\S]*?grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(min\(100%,\s*220px\),\s*1fr\)\)/
+  );
+  assert.match(indexCss, /minmax\(min\(100%,\s*245px\),\s*1fr\)/);
+
+  // 3. Dedicated device breakpoints covering every screen class
+  assert.match(indexCss, /@media\s*\(max-width:\s*1100px\)/); // Unified navbar & compact laptop/tablet
+  assert.match(indexCss, /@media\s*\(max-width:\s*1024px\)/); // iPads, Galaxy Tabs & tablet admin top-bar
+  assert.match(indexCss, /@media\s*\(max-width:\s*768px\)/); // Foldables (iPhone Duo / Surface Duo / Z Fold) & 16px iOS zoom guard
+  assert.match(indexCss, /@media\s*\(max-width:\s*600px\)/); // Smartphones (iPhone, Samsung, Tecno, Huawei)
+  assert.match(indexCss, /@media\s*\(max-width:\s*380px\)/); // Ultra-compact phones & Z Fold outer screen (280px-380px)
+  assert.match(indexCss, /@media\s*\(min-width:\s*1440px\)/); // Large desktop monitors
+  assert.match(indexCss, /font-size:\s*16px\s*!important/); // Prevents iOS Safari auto-zoom on form input focus
+});
+
