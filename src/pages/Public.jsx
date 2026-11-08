@@ -94,6 +94,10 @@ import {
 } from "../utils/readingTime";
 
 import {
+  sanitizeHttpUrl
+} from "../utils/urlSafety";
+
+import {
   useSavedPosts
 } from "../hooks/useSavedPosts";
 
@@ -2946,7 +2950,7 @@ export function Post() {
 
         <div className="container">
           <img
-            src={post.coverImage}
+            src={sanitizeHttpUrl(post.coverImage, "", { allowRelative: true })}
             alt={post.title}
             className="article-cover"
           />
@@ -2958,20 +2962,27 @@ export function Post() {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  a: ({ node, ...props }) => (
+                  a: ({ node, href, ...props }) => (
                     <a
                       {...props}
+                      href={sanitizeHttpUrl(href, "#", { allowRelative: true })}
                       target="_blank"
                       rel="noopener noreferrer"
                     />
-                  )
+                  ),
+                  img: ({ node, src, alt, ...props }) => {
+                    const safeSrc = sanitizeHttpUrl(src, "", { allowRelative: true });
+                    return safeSrc ? (
+                      <img {...props} src={safeSrc} alt={alt || ""} loading="lazy" />
+                    ) : null;
+                  }
                 }}
               >
                 {String(post.body || "")}
               </ReactMarkdown>
             </div>
 
-            {post.youtubeUrl && (
+            {sanitizeHttpUrl(post.youtubeUrl, "") && (
               <div className="youtube-story">
                 <YouTubeIcon size={28} />
 
@@ -2989,9 +3000,7 @@ export function Post() {
 
                 <a
                   className="btn earth"
-                  href={
-                    post.youtubeUrl
-                  }
+                  href={sanitizeHttpUrl(post.youtubeUrl, "#")}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -4495,9 +4504,10 @@ export function About() {
     return <PageLoading text="Loading About Us…" />;
   }
 
-  const youtubeUrl = String(
-    settings.youtubeChannelUrl || ""
-  ).trim();
+  const youtubeUrl = sanitizeHttpUrl(
+    String(settings.youtubeChannelUrl || "").trim(),
+    ""
+  );
 
   return (
     <>
@@ -4518,7 +4528,25 @@ export function About() {
 
       <section className="container section prose">
         <div className="about-markdown">
-  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+  <ReactMarkdown
+    remarkPlugins={[remarkGfm]}
+    components={{
+      a: ({ node, href, ...props }) => (
+        <a
+          {...props}
+          href={sanitizeHttpUrl(href, "#", { allowRelative: true })}
+          target="_blank"
+          rel="noopener noreferrer"
+        />
+      ),
+      img: ({ node, src, alt, ...props }) => {
+        const safeSrc = sanitizeHttpUrl(src, "", { allowRelative: true });
+        return safeSrc ? (
+          <img {...props} src={safeSrc} alt={alt || ""} loading="lazy" />
+        ) : null;
+      }
+    }}
+  >
     {String(settings.aboutBody || "")}
   </ReactMarkdown>
 </div>
@@ -4989,7 +5017,7 @@ export function CookiePolicy() {
               Firebase Auth &amp; App Check Storage (Strictly Necessary where used):
             </strong>{" "}
             Used only when an authorised administrator
-            signs in to <code>/admin</code> or when
+            signs in to the private administrative portal or when
             Firebase App Check is configured to protect
             public forms against automated abuse.
           </li>
@@ -5821,7 +5849,7 @@ export function Contribute() {
 
               <div className="field">
                 <label htmlFor="contrib-file">
-                  Reference Document / Image Check (JPG, PNG, WebP, PDF ≤ 8 MB)
+                  Reference Document / Image Metadata Check (JPG, PNG, WebP, PDF ≤ 8 MB)
                 </label>
                 <input
                   id="contrib-file"
@@ -5829,6 +5857,9 @@ export function Contribute() {
                   accept=".jpg,.jpeg,.png,.webp,.pdf"
                   onChange={handleFileMetadataChange}
                 />
+                <small className="muted">
+                  Validates and records reference file metadata (name, type, size) for curator review. Provide a Direct Media URL above to attach hosted images.
+                </small>
               </div>
             </div>
 

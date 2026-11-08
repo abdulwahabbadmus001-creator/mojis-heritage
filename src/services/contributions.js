@@ -8,11 +8,14 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../firebase.js";
+import { isSafeHttpUrl, sanitizeHttpUrl } from "../utils/urlSafety.js";
 
 export const SUBMISSIONS_STORAGE_KEY = "mojis_private_submissions_v1";
 export const CORRECTIONS_STORAGE_KEY = "mojis_correction_requests_v1";
 export const AUDIT_LOG_STORAGE_KEY = "mojis_admin_audit_logs_v1";
 export const SUBMISSION_RATE_LIMIT_KEY = "mojis_submission_rate_limit_v1";
+export const MAX_SUBMISSIONS_PER_MINUTE = 4;
+export const SUBMISSION_RATE_WINDOW_MS = 60 * 1000;
 
 export const SUBMISSION_STATUSES = [
   "Draft",
@@ -128,8 +131,13 @@ export function validatePublicSubmission(input = {}) {
     80
   );
   const contactEmail = sanitizeSubmissionText(input.contactEmail, 140);
-  const mediaUrl = sanitizeSubmissionText(input.mediaUrl, 600);
+  const rawMediaUrl = input.mediaUrl ? String(input.mediaUrl).trim().slice(0, 600) : "";
+  const mediaUrl = rawMediaUrl ? sanitizeHttpUrl(rawMediaUrl, "") : "";
   const copyrightDeclaration = sanitizeSubmissionText(input.copyrightDeclaration, 500);
+
+  if (rawMediaUrl && !isSafeHttpUrl(rawMediaUrl)) {
+    errors.push("Direct media URL must be a valid http:// or https:// web address.");
+  }
 
   if (title.length < 5) {
     errors.push("Please provide a descriptive title (at least 5 characters).");
@@ -354,6 +362,30 @@ export async function createPublicSubmission(input = {}, options = {}) {
       `A matching submission ("${duplicate.title}") is already on file with reference ${duplicate.referenceCode}.`
     );
   }
+
+  // Enforce submission rate limit per browser session / storage window
+  const nowMs = Date.now();
+  const maxPerWindow =
+    typeof options.maxPerWindow === "number"
+      ? options.maxPerWindow
+      : MAX_SUBMISSIONS_PER_MINUTE;
+  const windowMs =
+    typeof options.rateWindowMs === "number"
+      ? options.rateWindowMs
+      : SUBMISSION_RATE_WINDOW_MS;
+  const recentTimestamps = readLocalArray(SUBMISSION_RATE_LIMIT_KEY, storage)
+    .map((ts) => Number(ts))
+    .filter((ts) => Number.isFinite(ts) && nowMs - ts < windowMs);
+  if (recentTimestamps.length >= maxPerWindow) {
+    throw new Error(
+      "Rate limit exceeded: please wait a moment before submitting another contribution."
+    );
+  }
+  writeLocalArray(
+    SUBMISSION_RATE_LIMIT_KEY,
+    [...recentTimestamps, nowMs],
+    storage
+  );
 
   const nowIso = new Date().toISOString();
   const referenceCode = generateSubmissionReferenceCode();

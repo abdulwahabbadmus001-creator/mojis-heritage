@@ -22,11 +22,14 @@
     "react-i18next": "latest",
     "react-leaflet": "latest",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.30.1",
+    "react-router-dom": "^7.18.5",
     "remark-gfm": "^4.0.1",
-    "vite": "latest"
+    "vite": "^8.3.6"
   },
   "devDependencies": {
     "firebase-admin": "latest"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.13.6"
   }
 }

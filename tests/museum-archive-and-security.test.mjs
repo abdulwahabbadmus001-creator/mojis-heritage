@@ -43,6 +43,13 @@ import {
 } from "../src/services/externalDiscovery.js";
 import { filterPubliclyVisiblePosts } from "../src/services/content.js";
 import { mergeWithPreservedSnapshot } from "../scripts/sync-external-heritage.mjs";
+import {
+  ADMIN_ROUTE_SEGMENT,
+  ADMIN_BASE_PATH,
+  adminPath,
+  LEGACY_BLOCKED_ADMIN_PATHS,
+} from "../src/config/routes.js";
+import { isSafeHttpUrl, sanitizeHttpUrl } from "../src/utils/urlSafety.js";
 
 function createMemoryStorage() {
   const store = new Map();
@@ -574,4 +581,183 @@ test("9. Verified Met Museum Nigerian object IDs, scheduled sync artifacts, and 
   );
   assert.match(workflowYaml, /cron: "0 4 \* \* \*"/);
   assert.match(workflowYaml, /FirebaseExtended\/action-hosting-deploy@v0/);
+});
+
+test("10. Admin route hardening replaces predictable /admin path and prevents public route leakage", () => {
+  assert.equal(ADMIN_BASE_PATH, "/mh-newsroom-7f4c9a2e8b1d");
+  assert.ok(ADMIN_ROUTE_SEGMENT.length >= 16);
+  assert.equal(adminPath(""), "/mh-newsroom-7f4c9a2e8b1d");
+  assert.equal(adminPath("submissions"), "/mh-newsroom-7f4c9a2e8b1d/submissions");
+  assert.equal(adminPath("/discovery/"), "/mh-newsroom-7f4c9a2e8b1d/discovery");
+  assert.deepEqual(LEGACY_BLOCKED_ADMIN_PATHS, ["/admin", "/admin/*"]);
+
+  const rootDir = process.cwd();
+  const appJsx = fs.readFileSync(path.join(rootDir, "src", "App.jsx"), "utf8");
+  const adminJsx = fs.readFileSync(
+    path.join(rootDir, "src", "admin", "Admin.jsx"),
+    "utf8"
+  );
+  const siteJsx = fs.readFileSync(
+    path.join(rootDir, "src", "components", "Site.jsx"),
+    "utf8"
+  );
+  const publicJsx = fs.readFileSync(
+    path.join(rootDir, "src", "pages", "Public.jsx"),
+    "utf8"
+  );
+  const robotsTxt = fs.readFileSync(
+    path.join(rootDir, "public", "robots.txt"),
+    "utf8"
+  );
+  const sitemapXml = fs.readFileSync(
+    path.join(rootDir, "public", "sitemap.xml"),
+    "utf8"
+  );
+
+  // Verify App.jsx mounts AdminGate at ADMIN_BASE_PATH and routes /admin & /admin/* to NotFound
+  assert.match(appJsx, /path=\{ADMIN_BASE_PATH\}\s+element=\{<AdminGate \/>\}/);
+  assert.match(appJsx, /path="\/admin"\s+element=\{<NotFound \/>\}/);
+  assert.match(appJsx, /path="\/admin\/\*"\s+element=\{<NotFound \/>\}/);
+  assert.doesNotMatch(appJsx, /path="\/admin"\s+element=\{<AdminGate \/>\}/);
+
+  // Verify Admin.jsx uses ADMIN_BASE_PATH and adminPath(...) for all internal navigation
+  assert.doesNotMatch(adminJsx, /to="\/admin/);
+  assert.match(adminJsx, /to=\{ADMIN_BASE_PATH\}/);
+  assert.match(adminJsx, /to=\{adminPath\("submissions"\)\}/);
+  assert.match(adminJsx, /to=\{adminPath\("discovery"\)\}/);
+  assert.match(adminJsx, /to=\{adminPath\("posts"\)\}/);
+  assert.match(adminJsx, /to=\{adminPath\("visit"\)\}/);
+  assert.match(adminJsx, /to=\{adminPath\("comments"\)\}/);
+  assert.match(adminJsx, /to=\{adminPath\("settings"\)\}/);
+  assert.match(adminJsx, /to=\{adminPath\("analytics"\)\}/);
+  assert.match(adminJsx, /to=\{adminPath\("audit"\)\}/);
+
+  // Verify public navigation, footer, public pages, robots.txt, and sitemap.xml never leak ADMIN_ROUTE_SEGMENT
+  assert.equal(siteJsx.includes(ADMIN_ROUTE_SEGMENT), false);
+  assert.equal(publicJsx.includes(ADMIN_ROUTE_SEGMENT), false);
+  assert.equal(robotsTxt.includes(ADMIN_ROUTE_SEGMENT), false);
+  assert.equal(sitemapXml.includes(ADMIN_ROUTE_SEGMENT), false);
+});
+
+test("11. Admin dashboard layout and scroll-reset eliminate section-click scrolling defects on desktop and mobile", () => {
+  const rootDir = process.cwd();
+  const adminJsx = fs.readFileSync(
+    path.join(rootDir, "src", "admin", "Admin.jsx"),
+    "utf8"
+  );
+  const indexCss = fs.readFileSync(
+    path.join(rootDir, "src", "index.css"),
+    "utf8"
+  );
+
+  // Verify AdminLayout resets window and main container scroll immediately on pathname change and section click
+  assert.match(adminJsx, /function scrollAdminViewToTop/);
+  assert.match(adminJsx, /scrollAdminViewToTop\(adminMainRef\.current\)/);
+  assert.match(adminJsx, /onClick=\{handleSectionNavClick\}/);
+  assert.match(adminJsx, /className="admin-sidebar-nav"/);
+
+  // Verify desktop sticky sidebar + align-items: start and mobile compact horizontal navigation strip in index.css
+  assert.match(indexCss, /grid-template-columns:\s*260px minmax\(0,\s*1fr\)/);
+  assert.match(indexCss, /align-items:\s*start/);
+  assert.match(indexCss, /\.admin-sidebar-nav\s*\{[\s\S]*?overflow-x:\s*auto/);
+  assert.match(indexCss, /\.sidebar a\.admin-nav-link\.active/);
+});
+
+test("12. URL scheme sanitization, contribution rate limiting, HTTP security headers, and build hardening", async () => {
+  // 1. URL scheme sanitization blocks XSS / dangerous schemes
+  assert.equal(isSafeHttpUrl("https://www.metmuseum.org/art/collection/search/316524"), true);
+  assert.equal(isSafeHttpUrl("http://en.wikipedia.org/wiki/Igbo-Ukwu"), true);
+  assert.equal(isSafeHttpUrl("/mojis-mark.svg", { allowRelative: true }), true);
+  assert.equal(isSafeHttpUrl("javascript:alert(1)"), false);
+  assert.equal(isSafeHttpUrl("  JaVaScRiPt:alert(document.cookie)"), false);
+  assert.equal(isSafeHttpUrl("data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="), false);
+  assert.equal(isSafeHttpUrl("vbscript:msgbox(1)"), false);
+  assert.equal(isSafeHttpUrl("//evil.example.com/payload.js", { allowRelative: true }), false);
+  assert.equal(sanitizeHttpUrl("javascript:alert(1)", "#"), "#");
+
+  // 2. Public contribution validation rejects dangerous mediaUrl schemes
+  const xssSubmission = validatePublicSubmission({
+    title: "Benin Royal Coral Bead Regalia",
+    contentType: "artifact",
+    body: "Ceremonial coral bead regalia worn at the royal court of the Oba of Benin in Edo State.",
+    state: "Edo",
+    ethnicGroup: "Edo",
+    historicalPeriod: "Unknown",
+    sourcesAndReferences: "NCMM Benin City Museum catalogue.",
+    contributorName: "Curator Test",
+    attributionPreference: "Named Contributor",
+    mediaUrl: "javascript:alert('xss')",
+    copyrightDeclaration: "CC0 1.0 Public Domain Dedication",
+    consentToReview: true,
+    consentToPublishIfApproved: true,
+    rightsConfirmation: true,
+  });
+  assert.equal(xssSubmission.valid, false);
+  assert.ok(
+    xssSubmission.errors.some((e) => /Direct media URL must be a valid http/i.test(e))
+  );
+  assert.equal(xssSubmission.sanitized.mediaUrl, "");
+
+  // 3. Contribution rate limiting prevents rapid spam bursts
+  const rateStorage = createMemoryStorage();
+  const basePayload = {
+    contentType: "artifact",
+    body: "Documented historical textile weaving tradition practiced by master weavers in Iseyin, Oyo State.",
+    state: "Oyo",
+    ethnicGroup: "Yoruba",
+    historicalPeriod: "Approximate",
+    sourcesAndReferences: "Iseyin Weavers Guild Archive (2025).",
+    contributorName: "Adebayo Akanbi",
+    attributionPreference: "Named Contributor",
+    copyrightDeclaration: "CC BY-SA 4.0 Educational Attribution Permitted",
+    consentToReview: true,
+    consentToPublishIfApproved: true,
+    rightsConfirmation: true,
+  };
+  await createPublicSubmission(
+    { ...basePayload, title: "Aso-Oke Loom Pattern 1" },
+    { storage: rateStorage, skipFirestore: true, maxPerWindow: 2 }
+  );
+  await createPublicSubmission(
+    { ...basePayload, title: "Aso-Oke Loom Pattern 2" },
+    { storage: rateStorage, skipFirestore: true, maxPerWindow: 2 }
+  );
+  await assert.rejects(
+    () =>
+      createPublicSubmission(
+        { ...basePayload, title: "Aso-Oke Loom Pattern 3" },
+        { storage: rateStorage, skipFirestore: true, maxPerWindow: 2 }
+      ),
+    /Rate limit exceeded/
+  );
+
+  // 4. Verify HTTP security headers in firebase.json and sourcemap hardening in vite.config.js
+  const rootDir = process.cwd();
+  const firebaseConfig = JSON.parse(
+    fs.readFileSync(path.join(rootDir, "firebase.json"), "utf8")
+  );
+  const headerRules = firebaseConfig.hosting?.headers?.[0]?.headers || [];
+  const headerMap = new Map(headerRules.map((h) => [h.key, h.value]));
+
+  assert.equal(headerMap.get("X-Frame-Options"), "DENY");
+  assert.equal(headerMap.get("X-Content-Type-Options"), "nosniff");
+  assert.equal(
+    headerMap.get("Referrer-Policy"),
+    "strict-origin-when-cross-origin"
+  );
+  assert.match(headerMap.get("Permissions-Policy") || "", /camera=\(\)/);
+  assert.match(
+    headerMap.get("Content-Security-Policy") || "",
+    /default-src 'self'/
+  );
+  assert.match(
+    headerMap.get("Content-Security-Policy") || "",
+    /frame-ancestors 'none'/
+  );
+
+  const viteConfig = fs.readFileSync(
+    path.join(rootDir, "vite.config.js"),
+    "utf8"
+  );
+  assert.match(viteConfig, /sourcemap:\s*false/);
 });

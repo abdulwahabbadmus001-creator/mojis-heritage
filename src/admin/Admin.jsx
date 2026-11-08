@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/Auth";
+import { ADMIN_BASE_PATH, adminPath } from "../config/routes.js";
+import { isSafeHttpUrl, sanitizeHttpUrl } from "../utils/urlSafety.js";
 import {
   getAll,
   createItem,
@@ -201,12 +203,38 @@ function StatusBadge({ item }) {
     </span>
   );
 }
+function scrollAdminViewToTop(mainEl = null) {
+  if (typeof window !== "undefined") {
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    } catch {
+      window.scrollTo(0, 0);
+    }
+  }
+  if (typeof document !== "undefined") {
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  }
+  if (mainEl) {
+    if (typeof mainEl.scrollTo === "function") {
+      try {
+        mainEl.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      } catch {
+        mainEl.scrollTop = 0;
+      }
+    } else {
+      mainEl.scrollTop = 0;
+    }
+  }
+}
+
 function ImagePreview({ src, alt = "Preview" }) {
-  if (!src) return null;
+  const safeSrc = sanitizeHttpUrl(src, "", { allowRelative: true });
+  if (!safeSrc) return null;
   return (
     <div style={{ marginTop: "0.75rem" }}>
       <img
-        src={src}
+        src={safeSrc}
         alt={alt}
         loading="lazy"
         style={{
@@ -233,6 +261,19 @@ function AdminLoading() {
 }
 export function AdminGate() {
   const { user, isAdmin, loading } = useAuth();
+  useEffect(() => {
+    if (typeof document === "undefined") return undefined;
+    const robotsMeta = document.querySelector('meta[name="robots"]');
+    const previousContent = robotsMeta ? robotsMeta.getAttribute("content") : null;
+    if (robotsMeta) {
+      robotsMeta.setAttribute("content", "noindex, nofollow");
+    }
+    return () => {
+      if (robotsMeta && previousContent) {
+        robotsMeta.setAttribute("content", previousContent);
+      }
+    };
+  }, []);
   if (loading) {
     return <AdminLoading />;
   }
@@ -345,72 +386,122 @@ function AdminLogin({ setup = false }) {
     </section>
   );
 }
-function AdminLayout() {
+export function AdminLayout() {
   const { logout, user } = useAuth();
+  const location = useLocation();
+  const adminMainRef = useRef(null);
   const navClass = ({ isActive }) =>
     isActive ? "admin-nav-link active" : "admin-nav-link";
+
+  useEffect(() => {
+    scrollAdminViewToTop(adminMainRef.current);
+  }, [location.pathname]);
+
+  function handleSectionNavClick() {
+    scrollAdminViewToTop(adminMainRef.current);
+  }
+
   return (
     <div className="admin-shell">
-      <aside className="sidebar">
-        <div>
-          <h2 className="heading">Heritage Newsroom</h2>
-          <p
-            style={{
-              fontSize: "0.82rem",
-              opacity: 0.8,
-              wordBreak: "break-word",
-            }}
-          >
-            {user?.email}
-          </p>
+      <aside className="sidebar" aria-label="Admin Newsroom Navigation">
+        <div className="sidebar-brand">
+          <div>
+            <h2 className="heading">Heritage Newsroom</h2>
+            <p className="sidebar-user-email">{user?.email}</p>
+          </div>
+          <div className="sidebar-mobile-actions">
+            <Link className="sidebar-public-link" to="/">
+              Public Site ↗
+            </Link>
+            <button
+              className="btn earth sidebar-logout-btn"
+              type="button"
+              onClick={logout}
+            >
+              Logout
+            </button>
+          </div>
         </div>
-        <nav
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.25rem",
-          }}
-        >
-          <NavLink end className={navClass} to="/admin">
+        <nav className="admin-sidebar-nav" aria-label="Dashboard sections">
+          <NavLink
+            end
+            className={navClass}
+            to={ADMIN_BASE_PATH}
+            onClick={handleSectionNavClick}
+          >
             Dashboard
           </NavLink>
-          <NavLink className={navClass} to="/admin/submissions">
+          <NavLink
+            className={navClass}
+            to={adminPath("submissions")}
+            onClick={handleSectionNavClick}
+          >
             Submissions Queue
           </NavLink>
-          <NavLink className={navClass} to="/admin/discovery">
+          <NavLink
+            className={navClass}
+            to={adminPath("discovery")}
+            onClick={handleSectionNavClick}
+          >
             API Discovery & Sources
           </NavLink>
-          <NavLink className={navClass} to="/admin/posts">
+          <NavLink
+            className={navClass}
+            to={adminPath("posts")}
+            onClick={handleSectionNavClick}
+          >
             Stories & Posts
           </NavLink>
-          <NavLink className={navClass} to="/admin/visit">
+          <NavLink
+            className={navClass}
+            to={adminPath("visit")}
+            onClick={handleSectionNavClick}
+          >
             Visit Planner
           </NavLink>
-          <NavLink className={navClass} to="/admin/comments">
+          <NavLink
+            className={navClass}
+            to={adminPath("comments")}
+            onClick={handleSectionNavClick}
+          >
             Comments
           </NavLink>
-          <NavLink className={navClass} to="/admin/settings">
+          <NavLink
+            className={navClass}
+            to={adminPath("settings")}
+            onClick={handleSectionNavClick}
+          >
             About & Site Settings
           </NavLink>
-          <NavLink className={navClass} to="/admin/analytics">
+          <NavLink
+            className={navClass}
+            to={adminPath("analytics")}
+            onClick={handleSectionNavClick}
+          >
             Analytics
           </NavLink>
-          <NavLink className={navClass} to="/admin/audit">
+          <NavLink
+            className={navClass}
+            to={adminPath("audit")}
+            onClick={handleSectionNavClick}
+          >
             Audit Trail
           </NavLink>
         </nav>
-        <hr />
-        <Link to="/">View public website</Link>
-        <button
-          className="btn earth"
-          type="button"
-          onClick={logout}
-          style={{ marginTop: "1rem" }}
-        >
-          Logout
-        </button>
+        <div className="sidebar-footer">
+          <hr />
+          <Link to="/">View public website</Link>
+          <button
+            className="btn earth"
+            type="button"
+            onClick={logout}
+            style={{ marginTop: "1rem", width: "100%" }}
+          >
+            Logout
+          </button>
+        </div>
       </aside>
-      <main className="admin-main">
+      <main className="admin-main" ref={adminMainRef} tabIndex={-1}>
         <Outlet />
       </main>
     </div>
@@ -567,22 +658,22 @@ export function Dashboard() {
             flexWrap: "wrap",
           }}
         >
-          <Link className="btn primary" to="/admin/submissions">
+          <Link className="btn primary" to={adminPath("submissions")}>
             Review submissions ({pendingSubmissionsCount})
           </Link>
-          <Link className="btn earth" to="/admin/discovery">
+          <Link className="btn earth" to={adminPath("discovery")}>
             Manage API discovery ({apiAwaitingReviewCount})
           </Link>
-          <Link className="btn" to="/admin/posts">
+          <Link className="btn" to={adminPath("posts")}>
             Create or edit story
           </Link>
-          <Link className="btn" to="/admin/visit">
+          <Link className="btn" to={adminPath("visit")}>
             Add destination
           </Link>
-          <Link className="btn" to="/admin/comments">
+          <Link className="btn" to={adminPath("comments")}>
             Moderate comments
           </Link>
-          <Link className="btn" to="/admin/audit">
+          <Link className="btn" to={adminPath("audit")}>
             View audit log
           </Link>
         </div>
@@ -642,7 +733,7 @@ export function PostsAdmin() {
   }, []);
   function resetForm() {
     setForm(blankPost);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollAdminViewToTop();
   }
   function editPost(post) {
     setForm({
@@ -650,7 +741,7 @@ export function PostsAdmin() {
       ...post,
       scheduledDate: post.scheduledDate || "",
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollAdminViewToTop();
   }
   async function save(event) {
     event.preventDefault();
@@ -675,6 +766,17 @@ export function PostsAdmin() {
       scheduledDate: form.scheduledDate || null,
       views: Number(form.views || 0),
     };
+    if (
+      data.coverImage &&
+      !isSafeHttpUrl(data.coverImage, { allowRelative: true })
+    ) {
+      alert("Cover image URL must be a valid http:// or https:// web address.");
+      return;
+    }
+    if (data.youtubeUrl && !isSafeHttpUrl(data.youtubeUrl)) {
+      alert("YouTube video URL must be a valid http:// or https:// web address.");
+      return;
+    }
     if (!data.title && !data.body) {
       alert("Add a title or some article content before saving a draft.");
       return;
@@ -1112,7 +1214,7 @@ export function ListingsAdmin() {
   }, []);
   function resetForm() {
     setForm(blankListing);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollAdminViewToTop();
   }
   function editListing(item) {
     setForm({
@@ -1125,10 +1227,17 @@ export function ListingsAdmin() {
         : "",
       scheduledDate: item.scheduledDate || "",
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollAdminViewToTop();
   }
   async function save(event) {
     event.preventDefault();
+    if (
+      form.youtubeChannelUrl &&
+      !isSafeHttpUrl(String(form.youtubeChannelUrl).trim())
+    ) {
+      alert("YouTube channel URL must be a valid http:// or https:// web address.");
+      return;
+    }
     setBusy(true);
     try {
       const lat = Number(form.lat);
@@ -1143,6 +1252,11 @@ export function ListingsAdmin() {
         .map((value) => value.trim())
         .filter(Boolean)
         .slice(0, 8);
+      if (photos.some((url) => !isSafeHttpUrl(url, { allowRelative: true }))) {
+        throw new Error(
+          "All destination photo URLs must be valid http:// or https:// web addresses."
+        );
+      }
       const data = {
         name: form.name.trim(),
         state: form.state,
@@ -1720,6 +1834,13 @@ export function SiteSettings() {
   }, []);
   async function save(event) {
     event.preventDefault();
+    if (
+      form.youtubeChannelUrl &&
+      !isSafeHttpUrl(String(form.youtubeChannelUrl).trim())
+    ) {
+      alert("YouTube channel URL must be a valid http:// or https:// web address.");
+      return;
+    }
     setBusy(true);
     try {
       await saveSiteSettings(form);
@@ -1989,6 +2110,7 @@ export function SubmissionsAdmin() {
       historicalPeriod: sub.historicalPeriod || "",
       sourcesAndReferences: sub.sourcesAndReferences || "",
     });
+    scrollAdminViewToTop();
   }
 
   const filteredSubmissions = useMemo(() => {
@@ -2795,7 +2917,7 @@ export function ApiDiscoveryAdmin() {
                     <small>
                       {item.accessionNumber || "Open Archive"} ·{" "}
                       <a
-                        href={item.sourceUrl}
+                        href={sanitizeHttpUrl(item.sourceUrl, "#")}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

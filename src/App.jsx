@@ -44,6 +44,7 @@ import {
   ApiDiscoveryAdmin,
   AuditAdmin
 } from "./admin/Admin";
+import { ADMIN_BASE_PATH } from "./config/routes";
 
 /*
 ----------------------------------
@@ -280,6 +281,19 @@ export default function App() {
             />
 
             {/* =========================
+                LEGACY /ADMIN BLOCKED -> 404
+            ========================== */}
+            <Route
+              path="/admin"
+              element={<NotFound />}
+            />
+
+            <Route
+              path="/admin/*"
+              element={<NotFound />}
+            />
+
+            {/* =========================
                 404
             ========================== */}
             <Route
@@ -289,10 +303,10 @@ export default function App() {
           </Route>
 
           {/* =========================
-              ADMIN NEWSROOM
+              ADMIN NEWSROOM (Non-predictable path + Custom-Claim Auth)
           ========================== */}
           <Route
-            path="/admin"
+            path={ADMIN_BASE_PATH}
             element={<AdminGate />}
           >
             {/* ADMIN DASHBOARD */}

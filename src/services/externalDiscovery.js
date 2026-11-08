@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../firebase.js";
 import { NIGERIAN_STATES_AND_FCT, cultures } from "../data/cultures.js";
+import { sanitizeHttpUrl } from "../utils/urlSafety.js";
 
 export const DISCOVERY_CACHE_KEY = "mojis_external_discovery_cache_v1";
 export const DISCOVERY_PROVIDER_CONFIG_KEY = "mojis_external_provider_config_v1";
@@ -612,10 +613,19 @@ export function normalizeExternalRecord(raw = {}, providerId = "external") {
       : provider.defaultLicence);
   const licenceVerified = isLicenceOpenAndPermissible(licence);
 
+  const safeCoverImage = sanitizeHttpUrl(
+    raw.coverImage || raw.primaryImageSmall || raw.primaryImage || "",
+    ""
+  );
+  const safeSourceUrl = sanitizeHttpUrl(
+    raw.sourceUrl || raw.objectURL || "",
+    provider.documentationUrl
+  );
+
   const hasCompleteMetadata =
     Boolean(String(raw.title || "").trim()) &&
     Boolean(String(raw.summary || raw.body || "").trim()) &&
-    Boolean(String(raw.sourceUrl || "").trim());
+    Boolean( sanitizeHttpUrl(raw.sourceUrl || raw.objectURL || "", "") );
 
   const trustLevel = !relevance.isNigerianRelevant
     ? "rejected_non_nigerian"
@@ -665,8 +675,8 @@ export function normalizeExternalRecord(raw = {}, providerId = "external") {
     custodian:
       raw.custodian || raw.repository || provider.name,
     creator: raw.creator || raw.artistDisplayName || raw.culture || "Nigerian Master Artisan",
-    coverImage: raw.coverImage || raw.primaryImageSmall || raw.primaryImage || "",
-    sourceUrl: raw.sourceUrl || raw.objectURL || provider.documentationUrl,
+    coverImage: safeCoverImage,
+    sourceUrl: safeSourceUrl,
     licence,
     licenceVerified,
     trustLevel,
@@ -1016,6 +1026,11 @@ async function loadStaticSnapshotRecords() {
 }
 
 export function mapExternalDiscoveryToPost(ext = {}) {
+  const safeCover = sanitizeHttpUrl(
+    ext.coverImage || "",
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Igbo_Ukwu_vessel.jpg/800px-Igbo_Ukwu_vessel.jpg"
+  );
+  const safeSource = sanitizeHttpUrl(ext.sourceUrl || "", "");
   return {
     id: ext.id,
     title: ext.title,
@@ -1042,17 +1057,15 @@ export function mapExternalDiscoveryToPost(ext = {}) {
       ext.material ? `- **Material / Medium:** ${ext.material}` : "",
       ext.dimensions ? `- **Dimensions:** ${ext.dimensions}` : "",
       `- **Licence & Reuse Terms:** ${ext.licence || "Open Access"}`,
-      ext.sourceUrl ? `- **Original Museum / Archive Record:** [${ext.sourceUrl}](${ext.sourceUrl})` : "",
+      safeSource ? `- **Original Museum / Archive Record:** [${safeSource}](${safeSource})` : "",
     ]
       .filter((line) => line !== "")
       .join("\n"),
-    coverImage:
-      ext.coverImage ||
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Igbo_Ukwu_vessel.jpg/800px-Igbo_Ukwu_vessel.jpg",
+    coverImage: safeCover,
     sourceType: "external_api",
     sourceLabel: `External Discovery · ${ext.providerName || "Open-Access API"}`,
     verificationStatus: `Verified Open-Access Museum Record (${ext.providerName || "External API"})`,
-    sourceUrl: ext.sourceUrl || "",
+    sourceUrl: safeSource,
     licence: ext.licence || "Open Access",
     citations: [
       `${ext.providerName || "External Archive"}: "${ext.title}" (${ext.licence || "Open Access"}). Retrieved from ${ext.sourceUrl || "Open-Access API"}.`,
