@@ -53,6 +53,57 @@ service cloud.firestore {
       allow update, delete: if admin();
     }
 
+    // Private community & scholarly submissions:
+    // NEVER publicly readable; only admins can read, approve, or publish.
+    match /submissions/{id} {
+      allow read: if admin();
+      allow create: if
+        request.resource.data.status in ['Submitted', 'Pending Review'] &&
+        request.resource.data.isApproved == false &&
+        request.resource.data.isPublished == false &&
+        request.resource.data.consentToReview == true &&
+        request.resource.data.consentToPublishIfApproved == true &&
+        request.resource.data.rightsConfirmation == true &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() >= 5 &&
+        request.resource.data.title.size() <= 180 &&
+        request.resource.data.body is string &&
+        request.resource.data.body.size() >= 30 &&
+        request.resource.data.body.size() <= 12000;
+      allow update, delete: if admin();
+    }
+
+    // Private contributor correction, citation, and withdrawal requests:
+    // Only administrators can read or resolve requests.
+    match /correctionRequests/{id} {
+      allow read, update, delete: if admin();
+      allow create: if
+        request.resource.data.status == 'Pending Review' &&
+        request.resource.data.referenceOrRecordId is string &&
+        request.resource.data.referenceOrRecordId.size() >= 2 &&
+        request.resource.data.referenceOrRecordId.size() <= 140 &&
+        request.resource.data.details is string &&
+        request.resource.data.details.size() >= 15 &&
+        request.resource.data.details.size() <= 3000;
+    }
+
+    // External API discovered heritage records:
+    // Public visitors can only read records approved for public display.
+    match /externalDiscoveries/{id} {
+      allow read: if
+        (resource.data.status == 'Published' &&
+         resource.data.isApprovedForPublic == true) ||
+        admin();
+      allow create, update, delete: if admin();
+    }
+
+    // Immutable administrative audit log:
+    // Only administrators can read or append; nobody can overwrite or delete.
+    match /auditLogs/{id} {
+      allow read, create: if admin();
+      allow update, delete: if false;
+    }
+
     match /siteSettings/{id} {
       allow read: if true;
       allow create, update, delete: if admin();

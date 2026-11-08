@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://mojis-heritage-ae06c.web.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/heritage</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/festivals</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/histories</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/heroes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/foods</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/languages</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/gallery</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/yoruba</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/igbo</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/hausa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/edo</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/ijaw</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/fulani</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/tiv</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/kanuri</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/ibibio</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/efik</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/nupe</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/urhobo</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/itsekiri</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cultures/gbagyi</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/calendar</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/visit</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/contribute</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/search</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/privacy</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/cookies</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://mojis-heritage-ae06c.web.app/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+</urlset>

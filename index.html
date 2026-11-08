@@ -149,7 +149,19 @@
       crossorigin
     />
 
-      <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      (function () {
+        try {
+          var savedTheme = window.localStorage.getItem("mojis_theme_preference");
+          if (savedTheme === "noir") {
+            document.documentElement.setAttribute("data-theme", "noir");
+          } else {
+            document.documentElement.removeAttribute("data-theme");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body>

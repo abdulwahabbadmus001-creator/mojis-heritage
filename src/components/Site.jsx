@@ -363,6 +363,10 @@ export function Navbar() {
             Visit
           </Link>
 
+          <Link to="/contribute">
+            Contribute
+          </Link>
+
           <a
             href={channel}
             target="_blank"
@@ -523,6 +527,13 @@ export function Navbar() {
           </Link>
 
           <Link
+            to="/contribute"
+            onClick={closeMenu}
+          >
+            Contribute to the Archive
+          </Link>
+
+          <Link
             to="/search"
             onClick={closeMenu}
           >
@@ -652,6 +663,10 @@ export function Footer() {
 
             <Link to="/saved">
               Saved Stories
+            </Link>
+
+            <Link to="/contribute">
+              Contribute to Archive
             </Link>
           </div>
         </div>

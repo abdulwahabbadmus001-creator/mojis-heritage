@@ -1,0 +1,464 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+
+import {
+  cultures,
+  getCultureBySlug,
+  getCultureByName,
+  NIGERIAN_STATES_AND_FCT,
+  HISTORICAL_PERIODS,
+  ARTIFACT_CLASSIFICATIONS,
+} from "../src/data/cultures.js";
+import {
+  enrichRecordWithKnowledgeGraph,
+  getKnowledgeGraphConnections,
+} from "../src/data/knowledgeGraph.js";
+import { seedPosts, listings as seedListings } from "../src/data/seed.js";
+import {
+  validatePublicSubmission,
+  validateAttachmentFileMeta,
+  createPublicSubmission,
+  getAllSubmissionsForAdmin,
+  getPublishedCommunitySubmissions,
+  approveSubmission,
+  publishSubmission,
+  transitionSubmissionStatus,
+  submitCorrectionOrWithdrawalRequest,
+  getAdminAuditLogs,
+  isSubmissionPubliclyVisible,
+} from "../src/services/contributions.js";
+import {
+  evaluateNigerianRelevance,
+  normalizeExternalRecord,
+  deduplicateDiscoveryRecords,
+  computeDiscoveryFingerprint,
+  isLicenceOpenAndPermissible,
+  VERIFIED_BASELINE_EXTERNAL_RECORDS,
+  getProviderConfigs,
+  setProviderEnabled,
+} from "../src/services/externalDiscovery.js";
+import { filterPubliclyVisiblePosts } from "../src/services/content.js";
+
+function createMemoryStorage() {
+  const store = new Map();
+  return {
+    getItem(key) {
+      return store.has(key) ? store.get(key) : null;
+    },
+    setItem(key, value) {
+      store.set(key, String(value));
+    },
+    removeItem(key) {
+      store.delete(key);
+    },
+    clear() {
+      store.clear();
+    },
+  };
+}
+
+test("1. Nigerian Cultural Knowledge Graph covers all 14 core communities and 36 states + FCT", () => {
+  const expectedCommunities = [
+    "yoruba",
+    "igbo",
+    "hausa",
+    "edo",
+    "ijaw",
+    "fulani",
+    "tiv",
+    "kanuri",
+    "ibibio",
+    "efik",
+    "nupe",
+    "urhobo",
+    "itsekiri",
+    "gbagyi",
+  ];
+  for (const slug of expectedCommunities) {
+    const found = getCultureBySlug(slug);
+    assert.ok(found, `Expected Nigerian community "${slug}" to exist in cultures.js`);
+    assert.ok(Array.isArray(found.states) && found.states.length > 0);
+    assert.ok(Array.isArray(found.kingdomsAndInstitutions) && found.kingdomsAndInstitutions.length > 0);
+    assert.ok(Array.isArray(found.notableTraditions) && found.notableTraditions.length > 0);
+  }
+  assert.equal(NIGERIAN_STATES_AND_FCT.length, 37);
+  assert.ok(HISTORICAL_PERIODS.includes("Unknown"));
+  assert.ok(HISTORICAL_PERIODS.includes("Approximate"));
+  assert.ok(HISTORICAL_PERIODS.includes("Disputed"));
+  assert.ok(ARTIFACT_CLASSIFICATIONS.length >= 8);
+});
+
+test("2. Public submission validation enforces required fields, consent flags, and file safety", () => {
+  const invalid = validatePublicSubmission({
+    title: "Hi",
+    contentType: "invalid",
+    body: "Too short",
+  });
+  assert.equal(invalid.valid, false);
+  assert.ok(invalid.errors.length >= 5);
+
+  const validUnknownDate = validatePublicSubmission({
+    title: "Igun Street Lost-Wax Crucible Technique",
+    contentType: "artifact",
+    body: "Detailed documentation of the clay and beeswax core preparation used by hereditary brass-casters in Benin City, Edo State.",
+    state: "Edo",
+    ethnicGroup: "Edo",
+    historicalPeriod: "Unknown",
+    sourcesAndReferences: "Field interview with Igun Eronmwon guild elders (2025); NCMM Benin Museum archive.",
+    contributorName: "Dr. Osahon Egharevba",
+    attributionPreference: "Named Contributor",
+    copyrightDeclaration: "CC BY-SA 4.0 Educational Attribution Permitted",
+    consentToReview: true,
+    consentToPublishIfApproved: true,
+    rightsConfirmation: true,
+  });
+  assert.equal(validUnknownDate.valid, true);
+  assert.equal(validUnknownDate.errors.length, 0);
+
+  // Reject executable or oversized attachments
+  const badExt = validateAttachmentFileMeta({
+    name: "payload.exe",
+    type: "image/png",
+    size: 1024,
+  });
+  assert.equal(badExt.valid, false);
+
+  const oversized = validateAttachmentFileMeta({
+    name: "highres.jpg",
+    type: "image/jpeg",
+    size: 12 * 1024 * 1024,
+  });
+  assert.equal(oversized.valid, false);
+
+  const validPdf = validateAttachmentFileMeta({
+    name: "provenance-dossier.pdf",
+    type: "application/pdf",
+    size: 512 * 1024,
+  });
+  assert.equal(validPdf.valid, true);
+});
+
+test("3. Strict submission privacy & distinct Approve vs. Publish workflow", async () => {
+  const storage = createMemoryStorage();
+  const payload = {
+    title: "Nsibidi Ideographic Cloth from Old Calabar",
+    contentType: "artifact",
+    body: "An indigo-dyed Ukara ritual cloth inscribed with Nsibidi geometric motifs associated with the Ekpe society in Cross River State.",
+    state: "Cross River",
+    locality: "Calabar",
+    ethnicGroup: "Efik",
+    historicalPeriod: "Approximate",
+    sourcesAndReferences: "Old Residency Museum Calabar (NCMM) catalogue.",
+    contributorName: "Bassey Henshaw",
+    attributionPreference: "Named Contributor",
+    copyrightDeclaration: "CC BY-SA 4.0 Educational Attribution Permitted",
+    consentToReview: true,
+    consentToPublishIfApproved: true,
+    rightsConfirmation: true,
+  };
+
+  // Step A: Public submission enters Pending Review and is NEVER publicly visible
+  const created = await createPublicSubmission(payload, {
+    storage,
+    skipFirestore: true,
+  });
+  assert.equal(created.status, "Pending Review");
+  assert.equal(created.isApproved, false);
+  assert.equal(created.isPublished, false);
+  assert.match(created.referenceCode, /^MH-SUB-\d{4}-[A-Z0-9]+$/);
+  assert.equal(isSubmissionPubliclyVisible(created), false);
+
+  const publicBeforeApproval = await getPublishedCommunitySubmissions({
+    storage,
+    skipFirestore: true,
+  });
+  assert.equal(publicBeforeApproval.length, 0);
+
+  // Step B: Attempting to publish before approval must fail
+  await assert.rejects(
+    () =>
+      publishSubmission(created.id, {
+        adminEmail: "curator@mojisheritage.ng",
+        storage,
+        skipFirestore: true,
+      }),
+    /must be in "Approved" status before publication/
+  );
+
+  // Step C: Admin Approves submission (without publishing yet) -> still excluded from public feed
+  const approved = await approveSubmission(created.id, {
+    adminEmail: "curator@mojisheritage.ng",
+    reviewerNotes: "Verified against Old Residency Museum Calabar records.",
+    storage,
+    skipFirestore: true,
+  });
+  assert.equal(approved.status, "Approved");
+  assert.equal(approved.isApproved, true);
+  assert.equal(approved.isPublished, false);
+  assert.equal(isSubmissionPubliclyVisible(approved), false);
+
+  const publicAfterApproveOnly = await getPublishedCommunitySubmissions({
+    storage,
+    skipFirestore: true,
+  });
+  assert.equal(publicAfterApproveOnly.length, 0);
+
+  // Step D: Admin explicitly Publishes the approved submission -> now visible in public feed
+  let publishedPostCapture = null;
+  const { submission: publishedSub, publishedPost } = await publishSubmission(
+    created.id,
+    {
+      adminEmail: "curator@mojisheritage.ng",
+      reviewerNotes: "Published to Cultural Heritage collection.",
+      publishPostCallback: async (postDoc) => {
+        publishedPostCapture = postDoc;
+      },
+      storage,
+      skipFirestore: true,
+    }
+  );
+  assert.equal(publishedSub.status, "Published");
+  assert.equal(publishedSub.isApproved, true);
+  assert.equal(publishedSub.isPublished, true);
+  assert.ok(publishedPostCapture);
+  assert.equal(
+    publishedPost.sourceLabel,
+    "Community-Contributed · Admin Approved"
+  );
+
+  const publicAfterPublish = await getPublishedCommunitySubmissions({
+    storage,
+    skipFirestore: true,
+  });
+  assert.equal(publicAfterPublish.length, 1);
+
+  // Step E: Transitioning to Rejected or Withdrawn immediately removes from public visibility
+  const withdrawn = await transitionSubmissionStatus(
+    created.id,
+    "Withdrawn",
+    {
+      adminEmail: "curator@mojisheritage.ng",
+      reviewerNotes: "Withdrawn at contributor's request.",
+      storage,
+      skipFirestore: true,
+    }
+  );
+  assert.equal(withdrawn.isPublished, false);
+  const publicAfterWithdraw = await getPublishedCommunitySubmissions({
+    storage,
+    skipFirestore: true,
+  });
+  assert.equal(publicAfterWithdraw.length, 0);
+
+  // Verify immutable audit log recorded all admin transitions
+  const logs = await getAdminAuditLogs(storage);
+  assert.ok(logs.length >= 3);
+  assert.ok(logs.some((l) => l.action === "APPROVE_SUBMISSION"));
+  assert.ok(logs.some((l) => l.action === "PUBLISH_SUBMISSION"));
+});
+
+test("4. Duplicate submission detection and contributor correction/withdrawal requests", async () => {
+  const storage = createMemoryStorage();
+  const sample = {
+    title: "Masaga Glass Beadwork of Bida Emirate",
+    contentType: "artifact",
+    body: "Traditional molten glass bead and bangle crafting by the Masaga guild in Bida, Niger State, associated with Nupe heritage.",
+    state: "Niger",
+    ethnicGroup: "Nupe",
+    historicalPeriod: "Disputed",
+    sourcesAndReferences: "Bida Masaga Guild oral archive.",
+    contributorName: "Nda Aliyu",
+    attributionPreference: "Named Contributor",
+    copyrightDeclaration: "CC0 1.0 Public Domain Dedication",
+    consentToReview: true,
+    consentToPublishIfApproved: true,
+    rightsConfirmation: true,
+  };
+
+  const first = await createPublicSubmission(sample, {
+    storage,
+    skipFirestore: true,
+  });
+  await assert.rejects(
+    () =>
+      createPublicSubmission(sample, {
+        storage,
+        skipFirestore: true,
+      }),
+    /already on file/
+  );
+
+  const corr = await submitCorrectionOrWithdrawalRequest(
+    {
+      referenceOrRecordId: first.referenceCode,
+      requestType: "Additional Source Citation",
+      requesterName: "Nda Aliyu",
+      details: "Adding NCMM Minna archival catalogue citation for Masaga glass furnaces.",
+    },
+    { storage, skipFirestore: true }
+  );
+  assert.equal(corr.status, "Pending Review");
+  assert.match(corr.referenceCode, /^MH-REQ-\d{4}-/);
+});
+
+test("5. Nigerian relevance filtering strictly accepts Nigerian heritage and rejects non-Nigerian items", () => {
+  const beninPlaque = evaluateNigerianRelevance({
+    title: "Brass Plaque: Oba and Attendants",
+    country: "Nigeria",
+    culture: "Edo peoples, Court of Benin",
+    summary: "Cast in Benin City, Edo State.",
+  });
+  assert.equal(beninPlaque.isNigerianRelevant, true);
+  assert.ok(beninPlaque.score >= 6);
+
+  const nokHead = evaluateNigerianRelevance({
+    title: "Nok Terracotta Figure from Kaduna",
+    summary: "Excavated in southern Kaduna State, Central Nigeria.",
+  });
+  assert.equal(nokHead.isNigerianRelevant, true);
+
+  // Reject non-Nigerian African or global artifacts with no Nigerian connection
+  const ashantiStool = evaluateNigerianRelevance({
+    title: "Royal Asante Stool",
+    country: "Ghana",
+    culture: "Ashanti peoples, Kumasi",
+    summary: "Carved wooden ceremonial stool from the Ashanti Kingdom in Ghana.",
+  });
+  assert.equal(ashantiStool.isNigerianRelevant, false);
+
+  const frenchPainting = evaluateNigerianRelevance({
+    title: "Landscape at Giverny",
+    country: "France",
+    culture: "French",
+    summary: "19th century oil on canvas painting from Normandy, France.",
+  });
+  assert.equal(frenchPainting.isNigerianRelevant, false);
+});
+
+test("6. External API normalisation preserves attribution/licences and deduplicates records", () => {
+  const normalizedMet = normalizeExternalRecord(
+    {
+      externalId: "310750",
+      title: "Queen Mother Pendant Mask: Iyoba",
+      country: "Nigeria",
+      culture: "Court of Benin, Edo peoples",
+      summary: "16th century ivory mask from Benin City, Nigeria.",
+      sourceUrl: "https://www.metmuseum.org/art/collection/search/310750",
+      accessionNumber: "1978.412.323",
+      isPublicDomain: true,
+    },
+    "met_museum"
+  );
+  assert.equal(normalizedMet.trustLevel, "trusted_public");
+  assert.equal(normalizedMet.isApprovedForPublic, true);
+  assert.equal(normalizedMet.ethnicGroup, "Edo");
+  assert.equal(normalizedMet.accessionNumber, "1978.412.323");
+
+  // Non-free / restricted licence is blocked from public display
+  const restrictedItem = normalizeExternalRecord(
+    {
+      externalId: "restricted-99",
+      title: "Benin Palace Photograph",
+      country: "Nigeria",
+      summary: "Archival photograph of Benin City.",
+      sourceUrl: "https://example.org/photo",
+      licence: "All Rights Reserved - Copyrighted",
+    },
+    "wikimedia_commons"
+  );
+  assert.equal(isLicenceOpenAndPermissible(restrictedItem.licence), false);
+  assert.equal(restrictedItem.trustLevel, "rights_restricted");
+  assert.equal(restrictedItem.isApprovedForPublic, false);
+
+  // Deduplication removes identical fingerprints or titles
+  const deduped = deduplicateDiscoveryRecords([
+    normalizedMet,
+    { ...normalizedMet, id: "duplicate-copy" },
+  ]);
+  assert.equal(deduped.length, 1);
+  assert.ok(computeDiscoveryFingerprint(normalizedMet).includes("310750"));
+
+  // Provider toggle persistence
+  const storage = createMemoryStorage();
+  setProviderEnabled("wikimedia_commons", false, storage);
+  const configs = getProviderConfigs(storage);
+  const commonsCfg = configs.find((p) => p.id === "wikimedia_commons");
+  assert.equal(commonsCfg.enabled, false);
+});
+
+test("7. Public feed filtering and Knowledge Graph connections work accurately", () => {
+  const mixedRecords = [
+    ...seedPosts,
+    {
+      id: "pending-test",
+      title: "Unapproved Draft",
+      status: "Pending Review",
+      isPublished: false,
+    },
+    {
+      id: "rejected-test",
+      title: "Rejected Item",
+      status: "Rejected",
+      isPublished: false,
+    },
+  ];
+  const visible = filterPubliclyVisiblePosts(mixedRecords);
+  assert.equal(
+    visible.some((r) => r.id === "pending-test" || r.id === "rejected-test"),
+    false
+  );
+  assert.ok(visible.length >= seedPosts.length);
+
+  const beninEnriched = enrichRecordWithKnowledgeGraph(
+    seedPosts.find((p) => p.id === "benin")
+  );
+  assert.equal(beninEnriched.state, "Edo");
+  assert.ok(beninEnriched.provenanceEvents.length >= 2);
+  assert.ok(beninEnriched.annotations.length >= 2);
+
+  const connections = getKnowledgeGraphConnections(
+    beninEnriched,
+    seedPosts,
+    seedListings
+  );
+  assert.equal(connections.culture?.slug, "edo");
+  assert.ok(connections.relatedDestinations.some((d) => d.id === "benin-palace"));
+});
+
+test("8. Security rules, FOUC theme script, and SEO files are properly hardened", () => {
+  const rootDir = process.cwd();
+  const firestoreRules = fs.readFileSync(
+    path.join(rootDir, "firestore.rules"),
+    "utf8"
+  );
+  const storageRules = fs.readFileSync(
+    path.join(rootDir, "storage.rules"),
+    "utf8"
+  );
+  const indexHtml = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
+  const robotsTxt = fs.readFileSync(
+    path.join(rootDir, "public", "robots.txt"),
+    "utf8"
+  );
+
+  // Verify Firestore rules enforce admin() for reading submissions, correctionRequests, and auditLogs
+  assert.match(firestoreRules, /match \/submissions\/\{id\}/);
+  assert.match(firestoreRules, /allow read: if admin\(\);/);
+  assert.match(firestoreRules, /match \/correctionRequests\/\{id\}/);
+  assert.match(firestoreRules, /match \/externalDiscoveries\/\{id\}/);
+  assert.match(firestoreRules, /match \/auditLogs\/\{id\}/);
+  assert.match(firestoreRules, /request\.auth\.token\.admin == true/);
+
+  // Verify Storage rules protect private submission uploads
+  assert.match(storageRules, /match \/submissions_private\/\{allPaths=\*\*\}/);
+  assert.match(storageRules, /allow read: if admin\(\);/);
+
+  // Verify FOUC prevention script in index.html
+  assert.match(indexHtml, /mojis_theme_preference/);
+  assert.match(indexHtml, /setAttribute\("data-theme", "noir"\)/);
+
+  // Verify robots.txt disallows /admin
+  assert.match(robotsTxt, /Disallow: \/admin/);
+});

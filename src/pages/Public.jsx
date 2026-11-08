@@ -60,8 +60,27 @@ import {
 
 import {
   cultures,
-  getCultureBySlug
+  getCultureBySlug,
+  NIGERIAN_STATES_AND_FCT,
+  HISTORICAL_PERIODS,
+  ARTIFACT_CLASSIFICATIONS
 } from "../data/cultures";
+
+import {
+  enrichRecordWithKnowledgeGraph,
+  getKnowledgeGraphConnections
+} from "../data/knowledgeGraph";
+
+import {
+  getPublicExternalDiscoveries
+} from "../services/externalDiscovery";
+
+import {
+  CONTRIBUTION_CONTENT_TYPES,
+  createPublicSubmission,
+  submitCorrectionOrWithdrawalRequest,
+  validateAttachmentFileMeta
+} from "../services/contributions";
 
 import {
   Share,
@@ -324,19 +343,37 @@ function SectionHeading({
 const HERITAGE_TIMELINE_CHAPTERS = [
   {
     id: "nok-terracotta",
-    era: "c. 900 BCE – 200 CE • CENTRAL NIGERIA",
+    era: "c. 1500 BCE – 200 CE • CENTRAL NIGERIA",
     periodLabel: "ERA I · ARCHAEOLOGICAL RECORD",
     title: "01. The Nok Terracotta & Early Iron Tradition",
     summary:
       "Archaeological excavations across central Nigeria (first identified near Nok village in Kaduna State in 1928) have uncovered large-scale coil-built terracotta sculptures alongside early iron-smelting furnaces dated between the first millennium BCE and second century CE.",
     material: "Coarse-grained Fired Clay & Iron Slag",
     provenanceContext: "Central Nigeria (Kaduna & Benue Valleys) · Ref: NCMM / Breunig (2014)",
+    custodian: "National Museum Jos & National Museum Kaduna (NCMM Nigeria)",
+    licence: "Open Educational Reference · Cited NCMM Archaeological Dossier",
     focalPoint: "center 24%",
     zoomScale: 1.0,
     detailCallout: "Illustrative Plate · Nok-era terracotta & ironworking scholarship",
     image:
       "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1400&q=80",
-    storyLink: "/histories"
+    storyLink: "/histories",
+    annotations: [
+      {
+        id: "nok-eye",
+        x: 46,
+        y: 34,
+        label: "Triangular Perforated Eye Motif",
+        detail: "Characteristic Nok sculptural convention with incised brow arches and pierced pupils allowing air vent during firing."
+      },
+      {
+        id: "nok-coil",
+        x: 58,
+        y: 66,
+        label: "Coiled Grog-Tempered Clay",
+        detail: "Hand-built from local alluvial clay mixed with crushed quartz temper for thermal resilience."
+      }
+    ]
   },
   {
     id: "igbo-ukwu",
@@ -347,12 +384,30 @@ const HERITAGE_TIMELINE_CHAPTERS = [
       "Excavated by archaeologist Thurstan Shaw (1959–1964) at Igbo Isaiah, Igbo Richard, and Igbo Jonah, the Igbo-Ukwu corpus demonstrates sophisticated leaded-bronze cire-perdue (lost-wax) casting and long-distance trade networks associated with the Eze Nri institution.",
     material: "Leaded Bronze, Copper & Glass Beads",
     provenanceContext: "Igbo-Ukwu, Anambra State · Ref: Shaw (1970) / NCMM Lagos",
+    custodian: "National Museum Lagos & Enugu (NCMM Nigeria)",
+    licence: "Open Educational Reference · Cited Shaw (1970) Excavation Archive",
     focalPoint: "center 45%",
     zoomScale: 1.18,
     detailCallout: "Illustrative Plate · Igbo-Ukwu bronze-casting & Nri ritual context",
     image:
       "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1400&q=80",
-    storyLink: "/post/ozo"
+    storyLink: "/post/ozo",
+    annotations: [
+      {
+        id: "igbo-ropework",
+        x: 48,
+        y: 44,
+        label: "Cire-Perdue Knotted Ropework",
+        detail: "Cast in thin-walled leaded bronze with delicate wax-thread relief knots enclosing the ritual water vessel."
+      },
+      {
+        id: "igbo-alloy",
+        x: 64,
+        y: 62,
+        label: "Indigenous Lead-Copper-Tin Ore",
+        detail: "Isotopic analysis links the alloy to ancient Abakaliki / Benue trough矿 ore deposits in southeastern Nigeria."
+      }
+    ]
   },
   {
     id: "ife-naturalism",
@@ -363,12 +418,30 @@ const HERITAGE_TIMELINE_CHAPTERS = [
       "In Yorùbá oral tradition and archaeological research at sites such as Wunmonije Compound and Ita Yemoo, medieval Ilé-Ifẹ̀ artists produced naturalistic copper-alloy and terracotta sculptures interpreted by scholars as royal and sacred effigies.",
     material: "Copper Alloy (Brass/Bronze) & Terracotta",
     provenanceContext: "Ilé-Ifẹ̀, Osun State · Ref: Ife Museum (NCMM) / Willett (1967)",
+    custodian: "National Museum Ilé-Ifẹ̀, Osun State (NCMM Nigeria)",
+    licence: "Open Educational Reference · Cited Willett (1967) & NCMM",
     focalPoint: "center 18%",
     zoomScale: 1.26,
     detailCallout: "Illustrative Plate · Classical Ilé-Ifẹ̀ portraiture & facial striations",
     image:
       "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1400&q=80",
-    storyLink: "/cultures/yoruba"
+    storyLink: "/cultures/yoruba",
+    annotations: [
+      {
+        id: "ife-striation",
+        x: 44,
+        y: 38,
+        label: "Fine Vertical Facial Striations",
+        detail: "Parallel scarification lines (ikọlẹ) rendered with sub-millimetre precision across the serene portrait visage."
+      },
+      {
+        id: "ife-crown",
+        x: 52,
+        y: 22,
+        label: "Are Royal Diadem Plume Socket",
+        detail: "Perforations along the hairline anchored glass and stone bead regalia worn by the Ooni of Ife."
+      }
+    ]
   },
   {
     id: "benin-guilds",
@@ -379,12 +452,30 @@ const HERITAGE_TIMELINE_CHAPTERS = [
       "Organized under the Oba in Benin City, hereditary guilds of brass-casters (Igun Eronmwon) and ivory carvers (Igbesanmwan) recorded dynastic history, palace rituals, and diplomacy prior to the 1897 British expedition and subsequent global restitution efforts.",
     material: "Cast Brass, Elephant Ivory & Coral Regalia",
     provenanceContext: "Benin City, Edo State · Ref: Benin National Museum / Digital Benin",
+    custodian: "Oba of Benin Royal Court & National Museum Benin City",
+    licence: "Open Educational Reference · Digital Benin & NCMM Restitution Dossier",
     focalPoint: "center 35%",
     zoomScale: 1.12,
     detailCallout: "Illustrative Plate · Benin court guild traditions & historical memory",
     image:
       "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=1400&q=80",
-    storyLink: "/post/benin"
+    storyLink: "/post/benin",
+    annotations: [
+      {
+        id: "benin-coral",
+        x: 50,
+        y: 36,
+        label: "Ododo High Coral Bead Collar",
+        detail: "Multi-strand Mediterranean red coral regalia signifying court rank under the Oba of Benin."
+      },
+      {
+        id: "benin-foil",
+        x: 70,
+        y: 52,
+        label: "Ebe-Amen Quatrefoil River-Leaf",
+        detail: "Punched background motif honouring Olokun, lord of the great waters and wealth."
+      }
+    ]
   }
 ];
 
@@ -417,6 +508,21 @@ export function Home() {
   const [artifactZoom, setArtifactZoom] =
     useState(1);
 
+  const [artifactPan, setArtifactPan] =
+    useState({ x: 0, y: 0 });
+
+  const [activeAnnotationId, setActiveAnnotationId] =
+    useState(null);
+
+  const [viewerFullscreen, setViewerFullscreen] =
+    useState(false);
+
+  const [viewerImgError, setViewerImgError] =
+    useState(false);
+
+  const [externalDiscoveries, setExternalDiscoveries] =
+    useState([]);
+
   const { choices } = useConsent();
 
   const navigate = useNavigate();
@@ -434,7 +540,28 @@ export function Home() {
     getListings()
       .then(setListings)
       .catch(() => setListings([]));
+
+    getPublicExternalDiscoveries()
+      .then(setExternalDiscoveries)
+      .catch(() => setExternalDiscoveries([]));
   }, []);
+
+  useEffect(() => {
+    setArtifactPan({ x: 0, y: 0 });
+    setActiveAnnotationId(null);
+    setViewerImgError(false);
+  }, [activeChapterId]);
+
+  useEffect(() => {
+    if (!viewerFullscreen) return undefined;
+    function onKeyDown(event) {
+      if (event.key === "Escape") {
+        setViewerFullscreen(false);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [viewerFullscreen]);
 
   useEffect(() => {
     setRecent(
@@ -800,7 +927,7 @@ export function Home() {
                   {activeChapter.periodLabel}
                 </span>
 
-                <div className="split-zoom-controls" role="group" aria-label="Artifact Zoom Controls">
+                <div className="split-zoom-controls" role="group" aria-label="Artifact Zoom and Pan Controls">
                   <button
                     type="button"
                     className="zoom-btn"
@@ -818,32 +945,186 @@ export function Home() {
                     type="button"
                     className="zoom-btn"
                     onClick={() =>
-                      setArtifactZoom((z) => Math.min(1.45, +(z + 0.15).toFixed(2)))
+                      setArtifactZoom((z) => Math.min(1.65, +(z + 0.15).toFixed(2)))
                     }
                     aria-label="Zoom in artifact"
                   >
                     +
                   </button>
+                  <button
+                    type="button"
+                    className="zoom-btn"
+                    onClick={() =>
+                      setArtifactPan((p) => ({ ...p, x: Math.max(-45, p.x - 15) }))
+                    }
+                    aria-label="Pan artifact left"
+                    title="Pan left"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    className="zoom-btn"
+                    onClick={() =>
+                      setArtifactPan((p) => ({ ...p, x: Math.min(45, p.x + 15) }))
+                    }
+                    aria-label="Pan artifact right"
+                    title="Pan right"
+                  >
+                    →
+                  </button>
+                  <button
+                    type="button"
+                    className="zoom-btn"
+                    onClick={() => {
+                      setArtifactZoom(1);
+                      setArtifactPan({ x: 0, y: 0 });
+                    }}
+                    aria-label="Reset zoom and pan"
+                    title="Reset view"
+                  >
+                    ⟲
+                  </button>
+                  <button
+                    type="button"
+                    className="zoom-btn"
+                    onClick={() => setViewerFullscreen(true)}
+                    aria-label="Open fullscreen artifact inspection"
+                    title="Fullscreen inspection"
+                  >
+                    ⤢
+                  </button>
                 </div>
               </div>
 
-              <div className="split-stage-viewport">
-                <img
-                  src={activeChapter.image}
-                  alt={activeChapter.title}
-                  loading="lazy"
-                  style={{
-                    objectPosition: activeChapter.focalPoint,
-                    transform: `scale(${(
-                      activeChapter.zoomScale * artifactZoom
-                    ).toFixed(2)})`
-                  }}
-                  className="split-stage-image"
-                />
+              <div className="split-stage-viewport" style={{ position: "relative" }}>
+                {!viewerImgError ? (
+                  <img
+                    src={activeChapter.image}
+                    alt={activeChapter.title}
+                    loading="lazy"
+                    onError={() => setViewerImgError(true)}
+                    style={{
+                      objectPosition: activeChapter.focalPoint,
+                      transform: `scale(${(
+                        activeChapter.zoomScale * artifactZoom
+                      ).toFixed(2)}) translate(${artifactPan.x}px, ${artifactPan.y}px)`
+                    }}
+                    className="split-stage-image"
+                  />
+                ) : (
+                  <div
+                    className="split-stage-fallback"
+                    style={{
+                      minHeight: 320,
+                      display: "grid",
+                      placeItems: "center",
+                      padding: "2rem",
+                      textAlign: "center"
+                    }}
+                  >
+                    <p>
+                      Archival plate preview temporarily unavailable. Provenance
+                      and material notes remain accessible below.
+                    </p>
+                  </div>
+                )}
+
+                {Array.isArray(activeChapter.annotations) &&
+                  activeChapter.annotations.map((pin, idx) => {
+                    const isPinOpen = activeAnnotationId === pin.id;
+                    return (
+                      <button
+                        key={pin.id}
+                        type="button"
+                        aria-label={`Inspect annotation: ${pin.label}`}
+                        aria-expanded={isPinOpen}
+                        onClick={() =>
+                          setActiveAnnotationId(isPinOpen ? null : pin.id)
+                        }
+                        style={{
+                          position: "absolute",
+                          left: `${pin.x}%`,
+                          top: `${pin.y}%`,
+                          transform: "translate(-50%, -50%)",
+                          width: 30,
+                          height: 30,
+                          borderRadius: "999px",
+                          border: "2px solid #f5d08a",
+                          background: isPinOpen
+                            ? "#c89d54"
+                            : "rgba(12, 11, 10, 0.82)",
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: "0.78rem",
+                          cursor: "pointer",
+                          zIndex: 4
+                        }}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
+
                 <div className="split-stage-callout glass-noir">
-                  <span className="mono-eyebrow">STAGE VIEWPORT NOTE</span>
-                  <strong>{activeChapter.detailCallout}</strong>
+                  <span className="mono-eyebrow">
+                    {activeAnnotationId
+                      ? "CURATORIAL ANNOTATION PIN"
+                      : "STAGE VIEWPORT NOTE"}
+                  </span>
+                  <strong>
+                    {activeAnnotationId
+                      ? activeChapter.annotations?.find(
+                          (a) => a.id === activeAnnotationId
+                        )?.label
+                      : activeChapter.detailCallout}
+                  </strong>
+                  {activeAnnotationId && (
+                    <p style={{ margin: "0.25rem 0 0", fontSize: "0.84rem" }}>
+                      {
+                        activeChapter.annotations?.find(
+                          (a) => a.id === activeAnnotationId
+                        )?.detail
+                      }
+                    </p>
+                  )}
                 </div>
+              </div>
+
+              {/* Thumbnail Switcher */}
+              <div
+                role="tablist"
+                aria-label="Artifact Era Thumbnail Switcher"
+                style={{
+                  display: "flex",
+                  gap: "0.5rem",
+                  marginTop: "0.75rem",
+                  overflowX: "auto"
+                }}
+              >
+                {HERITAGE_TIMELINE_CHAPTERS.map((thumb) => {
+                  const selected = thumb.id === activeChapter.id;
+                  return (
+                    <button
+                      key={thumb.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      onClick={() => setActiveChapterId(thumb.id)}
+                      className={
+                        selected ? "glass-pill-noir" : "lighting-btn"
+                      }
+                      style={{
+                        fontSize: "0.76rem",
+                        padding: "0.35rem 0.7rem",
+                        cursor: "pointer",
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      {thumb.title.replace(/^\d+\.\s*/, "")}
+                    </button>
+                  );
+                })}
               </div>
 
               <dl className="split-stage-specs">
@@ -854,6 +1135,12 @@ export function Home() {
                 <div>
                   <dt>CONTEXT &amp; CITATION</dt>
                   <dd>{activeChapter.provenanceContext}</dd>
+                </div>
+                <div>
+                  <dt>CUSTODIAN &amp; RIGHTS</dt>
+                  <dd>
+                    {activeChapter.custodian} · {activeChapter.licence}
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -931,6 +1218,208 @@ export function Home() {
                 })}
               </div>
             </div>
+          </div>
+        </div>
+
+        {viewerFullscreen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Fullscreen inspection: ${activeChapter.title}`}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              background: "rgba(8, 8, 7, 0.94)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "1.5rem"
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 1080,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1rem",
+                color: "#f5f2eb"
+              }}
+            >
+              <div>
+                <span className="mono-eyebrow">{activeChapter.era}</span>
+                <h3 className="heading" style={{ margin: 0, color: "#fff" }}>
+                  {activeChapter.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                className="btn earth"
+                onClick={() => setViewerFullscreen(false)}
+              >
+                Exit Fullscreen (Esc)
+              </button>
+            </div>
+            <img
+              src={activeChapter.image}
+              alt={activeChapter.title}
+              style={{
+                maxWidth: "92vw",
+                maxHeight: "74vh",
+                objectFit: "contain",
+                borderRadius: 14,
+                border: "1px solid rgba(212, 163, 89, 0.35)"
+              }}
+            />
+            <p
+              style={{
+                color: "#d9d2c5",
+                maxWidth: 780,
+                textAlign: "center",
+                marginTop: "0.85rem",
+                fontSize: "0.92rem"
+              }}
+            >
+              {activeChapter.material} · {activeChapter.provenanceContext} ·{" "}
+              {activeChapter.licence}
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* ============================================================
+          EXTERNAL OPEN-ACCESS COLLECTIONS & NEWLY DISCOVERED HERITAGE
+      ============================================================ */}
+      {externalDiscoveries.length > 0 && (
+        <section
+          className="container section"
+          aria-labelledby="external-collections-heading"
+        >
+          <SectionHeading
+            eyebrow="Open-Access Museum & Archival Integrations"
+            title="External Collections & Newly Discovered Nigerian Heritage"
+            text="Verified open-access Nigerian artifacts and cultural records synchronized from The Metropolitan Museum of Art Open Access API and Wikipedia/Wikimedia Heritage Archives."
+            link="/search?source=external"
+            linkLabel="Filter external collections"
+          />
+
+          <div id="external-collections-heading" className="grid cards">
+            {externalDiscoveries.slice(0, 3).map((item) => (
+              <article className="card" key={item.id}>
+                {item.coverImage && (
+                  <div className="card-media">
+                    <img
+                      src={item.coverImage}
+                      alt={item.title}
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                    <span className="card-badge">
+                      External Discovery · {item.providerName}
+                    </span>
+                  </div>
+                )}
+                <div className="card-body">
+                  <div className="card-meta">
+                    <span className="tag soft">{item.ethnicGroup}</span>
+                    {item.state && <span>{item.state} State</span>}
+                  </div>
+                  <h3 className="heading card-title">{item.title}</h3>
+                  <p className="muted card-summary">{item.summary}</p>
+                  <small
+                    className="muted"
+                    style={{ display: "block", marginBottom: "0.75rem" }}
+                  >
+                    <strong>Custodian:</strong> {item.custodian}
+                    {item.accessionNumber
+                      ? ` (${item.accessionNumber})`
+                      : ""}{" "}
+                    · <strong>Licence:</strong> {item.licence}
+                  </small>
+                  <div className="card-actions">
+                    <a
+                      href={item.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-link"
+                    >
+                      Inspect Source Record ↗
+                    </a>
+                    <Link
+                      to={`/search?q=${encodeURIComponent(item.ethnicGroup || "Nigeria")}`}
+                      className="text-link"
+                    >
+                      Related Archive →
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================
+          CONTRIBUTE TO THE ARCHIVE CALL TO ACTION
+      ============================================================ */}
+      <section className="container section">
+        <div className="visit-cta">
+          <div>
+            <span className="eyebrow light">
+              Community & Scholarly Contributions
+            </span>
+            <h2 className="heading">
+              Contribute to Nigeria&apos;s Digital Cultural Archive
+            </h2>
+            <p>
+              Historians, custodians, researchers, and community members can
+              submit artifact documentation, oral histories, festival records,
+              indigenous terminology, or source citations. Every submission is
+              reviewed privately by Moji&apos;s Heritage administrators before
+              publication.
+            </p>
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+              <Link className="btn earth" to="/contribute">
+                Contribute to the Archive
+              </Link>
+              <Link
+                className="btn hero-outline"
+                to="/contribute?tab=correction"
+              >
+                Submit a Correction or Citation
+              </Link>
+            </div>
+          </div>
+          <div className="visit-preview">
+            <Link to="/contribute">
+              <span>
+                <strong>1. Submit with Sources &amp; Rights</strong>
+                <small>
+                  Include state, community, period, and attribution preference
+                </small>
+              </span>
+            </Link>
+            <Link to="/contribute">
+              <span>
+                <strong>2. Private Curatorial Review</strong>
+                <small>
+                  Pending records remain strictly private until approved
+                </small>
+              </span>
+            </Link>
+            <Link to="/contribute">
+              <span>
+                <strong>3. Verified Publication</strong>
+                <small>
+                  Published with full contributor credit &amp; provenance badge
+                </small>
+              </span>
+            </Link>
           </div>
         </div>
       </section>
@@ -1646,12 +2135,74 @@ export function CultureDetail() {
       </section>
 
       <section className="container section">
+        {/* Connected Nigerian Cultural Knowledge Graph Profile */}
+        <div
+          className="grid cards"
+          style={{ marginBottom: "2.25rem" }}
+          aria-label={`${culture.name} Cultural Knowledge Graph`}
+        >
+          {Array.isArray(culture.kingdomsAndInstitutions) &&
+            culture.kingdomsAndInstitutions.length > 0 && (
+              <div className="card card-body">
+                <span className="eyebrow">Kingdoms &amp; Institutions</span>
+                <h3 className="heading">Historic Polities &amp; Custodians</h3>
+                <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.1rem" }}>
+                  {culture.kingdomsAndInstitutions.map((item) => (
+                    <li key={item} style={{ marginBottom: "0.35rem" }}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+          {Array.isArray(culture.notableTraditions) &&
+            culture.notableTraditions.length > 0 && (
+              <div className="card card-body">
+                <span className="eyebrow">Material &amp; Living Heritage</span>
+                <h3 className="heading">Notable Traditions &amp; Arts</h3>
+                <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.1rem" }}>
+                  {culture.notableTraditions.map((item) => (
+                    <li key={item} style={{ marginBottom: "0.35rem" }}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+          {Array.isArray(culture.keyFigures) &&
+            culture.keyFigures.length > 0 && (
+              <div className="card card-body">
+                <span className="eyebrow">People &amp; Custodians</span>
+                <h3 className="heading">Key Historical Figures</h3>
+                <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.1rem" }}>
+                  {culture.keyFigures.map((item) => (
+                    <li key={item} style={{ marginBottom: "0.35rem" }}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                {Array.isArray(culture.languages) &&
+                  culture.languages.length > 0 && (
+                    <p
+                      className="muted"
+                      style={{ marginTop: "0.75rem", fontSize: "0.88rem" }}
+                    >
+                      <strong>Languages / Dialects:</strong>{" "}
+                      {culture.languages.join(", ")}
+                    </p>
+                  )}
+              </div>
+            )}
+        </div>
+
         {related.length === 0 && (
           <EmptyState
             title={`The ${culture.name} collection is growing`}
-            text="No matching published stories are available yet. New cultural stories can be added through the Moji's Heritage admin newsroom."
-            action="/cultures"
-            actionLabel="Explore other cultures"
+            text="Contribute verified artifact records, oral histories, or festival descriptions for administrator review."
+            action="/contribute"
+            actionLabel={`Contribute ${culture.name} Heritage`}
           />
         )}
 
@@ -2152,17 +2703,24 @@ export function Post() {
     );
   }
 
+  const enrichedPost = enrichRecordWithKnowledgeGraph(post);
+  const kgConnections = getKnowledgeGraphConnections(
+    enrichedPost,
+    allPosts,
+    []
+  );
+
   const related =
-    allPosts
-      .filter(
-        (item) =>
-          item.id !== post.id &&
-          (item.category ===
-            post.category ||
-            item.ethnicGroup ===
-              post.ethnicGroup)
-      )
-      .slice(0, 3);
+    kgConnections.relatedArtifactsAndStories.length > 0
+      ? kgConnections.relatedArtifactsAndStories.slice(0, 3)
+      : allPosts
+          .filter(
+            (item) =>
+              item.id !== post.id &&
+              (item.category === post.category ||
+                item.ethnicGroup === post.ethnicGroup)
+          )
+          .slice(0, 3);
 
   const saved =
     isSaved(post.id);
@@ -2203,11 +2761,21 @@ export function Post() {
               ] || post.category}
             </span>
 
-            {post.ethnicGroup && (
+            {enrichedPost.ethnicGroup && (
               <span className="tag soft">
-                {post.ethnicGroup}
+                {enrichedPost.ethnicGroup}
               </span>
             )}
+
+            {enrichedPost.state && (
+              <span className="tag soft">
+                {enrichedPost.state}
+              </span>
+            )}
+
+            <span className="tag soft">
+              {enrichedPost.sourceLabel || "Verified Moji's Heritage Publication"}
+            </span>
           </div>
 
           <h1 className="heading article-title">
@@ -2334,6 +2902,79 @@ export function Post() {
                 </a>
               </div>
             )}
+
+            {/* Provenance Timeline & Indigenous Lexicon */}
+            {Array.isArray(enrichedPost.provenanceEvents) &&
+              enrichedPost.provenanceEvents.length > 0 && (
+                <section
+                  className="card card-body"
+                  style={{ marginTop: "2rem" }}
+                  aria-label="Provenance and Historical Chronology"
+                >
+                  <span className="eyebrow">Provenance &amp; Chronology</span>
+                  <h3 className="heading">Documented Historical Timeline</h3>
+                  <div style={{ display: "grid", gap: "0.85rem", marginTop: "0.75rem" }}>
+                    {enrichedPost.provenanceEvents.map((evt, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          paddingLeft: "0.85rem",
+                          borderLeft: "3px solid var(--gold-primary, #c89d54)"
+                        }}
+                      >
+                        <strong>
+                          {evt.era} — {evt.title}
+                        </strong>
+                        <p style={{ margin: "0.25rem 0" }}>{evt.detail}</p>
+                        {evt.source && (
+                          <small className="muted">Source: {evt.source}</small>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+            {Array.isArray(enrichedPost.indigenousTerms) &&
+              enrichedPost.indigenousTerms.length > 0 && (
+                <section
+                  className="card card-body"
+                  style={{ marginTop: "1.25rem" }}
+                  aria-label="Indigenous Terminology"
+                >
+                  <span className="eyebrow">Indigenous Lexicon</span>
+                  <h3 className="heading">Key Cultural Terms</h3>
+                  <dl style={{ display: "grid", gap: "0.6rem", marginTop: "0.75rem" }}>
+                    {enrichedPost.indigenousTerms.map((entry) => (
+                      <div key={entry.term}>
+                        <dt style={{ fontWeight: 700 }}>{entry.term}</dt>
+                        <dd className="muted" style={{ margin: 0 }}>
+                          {entry.meaning}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              )}
+
+            {Array.isArray(enrichedPost.citations) &&
+              enrichedPost.citations.length > 0 && (
+                <section
+                  className="card card-body"
+                  style={{ marginTop: "1.25rem" }}
+                  aria-label="Sources and Archival Citations"
+                >
+                  <span className="eyebrow">Sources &amp; Verification</span>
+                  <h3 className="heading">Cited References</h3>
+                  <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.2rem" }}>
+                    {enrichedPost.citations.map((cit, i) => (
+                      <li key={i} style={{ marginBottom: "0.35rem" }}>
+                        {cit}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
 
             <div className="article-share">
               <h3 className="heading">
@@ -2484,10 +3125,18 @@ export function Post() {
           <aside className="article-sidebar">
             <div className="sidebar-box">
               <h3 className="heading">
-                About this story
+                Archival Dossier
               </h3>
 
               <dl className="article-facts">
+                <div>
+                  <dt>Verification</dt>
+                  <dd>
+                    {enrichedPost.verificationStatus ||
+                      "Curated Editorial Record"}
+                  </dd>
+                </div>
+
                 <div>
                   <dt>Category</dt>
                   <dd>
@@ -2500,22 +3149,67 @@ export function Post() {
 
                 <div>
                   <dt>
-                    Culture / Group
+                    Culture / Community
                   </dt>
                   <dd>
-                    {post.ethnicGroup ||
-                      "Multiple"}
+                    {kgConnections.culture ? (
+                      <Link to={`/cultures/${kgConnections.culture.slug}`}>
+                        {enrichedPost.ethnicGroup} →
+                      </Link>
+                    ) : (
+                      enrichedPost.ethnicGroup || "Multiple"
+                    )}
                   </dd>
                 </div>
 
                 <div>
-                  <dt>Region</dt>
+                  <dt>State &amp; Region</dt>
                   <dd>
-                    {post.region ||
-                      "Nigeria"}
+                    {[enrichedPost.state, enrichedPost.region]
+                      .filter(Boolean)
+                      .join(" · ") || "Nigeria"}
                   </dd>
                 </div>
+
+                {enrichedPost.historicalPeriod && (
+                  <div>
+                    <dt>Historical Period</dt>
+                    <dd>{enrichedPost.historicalPeriod}</dd>
+                  </div>
+                )}
+
+                {enrichedPost.classification && (
+                  <div>
+                    <dt>Classification</dt>
+                    <dd>{enrichedPost.classification}</dd>
+                  </div>
+                )}
+
+                {enrichedPost.custodian && (
+                  <div>
+                    <dt>Custodian / Source</dt>
+                    <dd>{enrichedPost.custodian}</dd>
+                  </div>
+                )}
+
+                {enrichedPost.licence && (
+                  <div>
+                    <dt>Rights / Licence</dt>
+                    <dd>{enrichedPost.licence}</dd>
+                  </div>
+                )}
               </dl>
+
+              <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(150,140,120,0.2)" }}>
+                <Link
+                  to={`/contribute?tab=correction&record=${encodeURIComponent(
+                    post.id
+                  )}`}
+                  className="text-link"
+                >
+                  Report Inaccuracy / Submit Citation →
+                </Link>
+              </div>
             </div>
           </aside>
         </div>
@@ -2556,14 +3250,33 @@ export function SearchPage() {
 
   const initialQuery =
     searchParams.get("q") || "";
+  const initialSource =
+    searchParams.get("source") || "all";
 
   const [search, setSearch] =
     useState(initialQuery);
+  const [categoryFilter, setCategoryFilter] =
+    useState("all");
+  const [stateFilter, setStateFilter] =
+    useState("all");
+  const [communityFilter, setCommunityFilter] =
+    useState("all");
+  const [periodFilter, setPeriodFilter] =
+    useState("all");
+  const [classificationFilter, setClassificationFilter] =
+    useState("all");
+  const [sourceFilter, setSourceFilter] =
+    useState(initialSource);
+  const [sortBy, setSortBy] =
+    useState("relevance");
+  const [visibleCount, setVisibleCount] =
+    useState(9);
 
   const [posts, setPosts] =
     useState([]);
-
   const [listings, setListings] =
+    useState([]);
+  const [externalItems, setExternalItems] =
     useState([]);
 
   useEffect(() => {
@@ -2574,67 +3287,229 @@ export function SearchPage() {
     getListings()
       .then(setListings)
       .catch(() => setListings([]));
+
+    getPublicExternalDiscoveries()
+      .then(setExternalItems)
+      .catch(() => setExternalItems([]));
   }, []);
 
   useEffect(() => {
-    setSearch(
-      searchParams.get("q") || ""
-    );
+    setSearch(searchParams.get("q") || "");
+    if (searchParams.get("source")) {
+      setSourceFilter(searchParams.get("source"));
+    }
   }, [searchParams]);
 
   function updateSearch(value) {
     setSearch(value);
+    setVisibleCount(9);
 
-    if (value.trim()) {
-      setSearchParams({
-        q: value
-      });
-    } else {
-      setSearchParams({});
-    }
+    const nextParams = {};
+    if (value.trim()) nextParams.q = value;
+    if (sourceFilter !== "all") nextParams.source = sourceFilter;
+    setSearchParams(nextParams);
   }
 
-  const queryValue =
-    normalise(search);
+  function resetAllFilters() {
+    setSearch("");
+    setCategoryFilter("all");
+    setStateFilter("all");
+    setCommunityFilter("all");
+    setPeriodFilter("all");
+    setClassificationFilter("all");
+    setSourceFilter("all");
+    setSortBy("relevance");
+    setVisibleCount(9);
+    setSearchParams({});
+  }
 
-  const matchingPosts =
-    posts.filter((post) =>
-      normalise(
-        `${post.title} ${post.summary} ${post.ethnicGroup} ${post.region} ${post.category}`
-      ).includes(queryValue)
-    );
+  const queryValue = normalise(search);
+  const hasActiveFilter =
+    Boolean(queryValue) ||
+    categoryFilter !== "all" ||
+    stateFilter !== "all" ||
+    communityFilter !== "all" ||
+    periodFilter !== "all" ||
+    classificationFilter !== "all" ||
+    sourceFilter !== "all";
 
-  const matchingListings =
-    listings.filter((item) =>
-      normalise(
+  const enrichedPosts = useMemo(
+    () => posts.map(enrichRecordWithKnowledgeGraph),
+    [posts]
+  );
+
+  const matchingPosts = useMemo(() => {
+    const filtered = enrichedPosts.filter((post) => {
+      if (
+        sourceFilter !== "all" &&
+        sourceFilter !== "editorial" &&
+        sourceFilter !== "community"
+      ) {
+        return false;
+      }
+      if (sourceFilter === "editorial" && post.sourceType !== "editorial") {
+        return false;
+      }
+      if (sourceFilter === "community" && post.sourceType !== "community") {
+        return false;
+      }
+      if (categoryFilter !== "all" && post.category !== categoryFilter) {
+        return false;
+      }
+      if (stateFilter !== "all" && post.state !== stateFilter) {
+        return false;
+      }
+      if (
+        communityFilter !== "all" &&
+        normalise(post.ethnicGroup) !== normalise(communityFilter)
+      ) {
+        return false;
+      }
+      if (
+        periodFilter !== "all" &&
+        !normalise(
+          `${post.historicalPeriod} ${post.periodFilter}`
+        ).includes(normalise(periodFilter))
+      ) {
+        return false;
+      }
+      if (
+        classificationFilter !== "all" &&
+        post.classification !== classificationFilter
+      ) {
+        return false;
+      }
+      if (!queryValue) return true;
+      return normalise(
+        `${post.title} ${post.summary} ${post.body} ${post.ethnicGroup} ${post.state} ${post.region} ${post.category} ${post.classification} ${post.historicalPeriod}`
+      ).includes(queryValue);
+    });
+
+    if (sortBy === "views") {
+      return [...filtered].sort(
+        (a, b) => Number(b.views || 0) - Number(a.views || 0)
+      );
+    }
+    if (sortBy === "title") {
+      return [...filtered].sort((a, b) =>
+        String(a.title || "").localeCompare(String(b.title || ""))
+      );
+    }
+    return filtered;
+  }, [
+    enrichedPosts,
+    sourceFilter,
+    categoryFilter,
+    stateFilter,
+    communityFilter,
+    periodFilter,
+    classificationFilter,
+    queryValue,
+    sortBy,
+  ]);
+
+  const matchingExternal = useMemo(() => {
+    if (
+      sourceFilter !== "all" &&
+      sourceFilter !== "external"
+    ) {
+      return [];
+    }
+    return externalItems.filter((item) => {
+      if (stateFilter !== "all" && item.state !== stateFilter) return false;
+      if (
+        communityFilter !== "all" &&
+        normalise(item.ethnicGroup) !== normalise(communityFilter)
+      ) {
+        return false;
+      }
+      if (
+        periodFilter !== "all" &&
+        !normalise(item.historicalPeriod).includes(normalise(periodFilter))
+      ) {
+        return false;
+      }
+      if (
+        classificationFilter !== "all" &&
+        item.classification !== classificationFilter
+      ) {
+        return false;
+      }
+      if (!queryValue) return true;
+      return normalise(
+        `${item.title} ${item.summary} ${item.body} ${item.ethnicGroup} ${item.state} ${item.providerName} ${item.accessionNumber}`
+      ).includes(queryValue);
+    });
+  }, [
+    externalItems,
+    sourceFilter,
+    stateFilter,
+    communityFilter,
+    periodFilter,
+    classificationFilter,
+    queryValue,
+  ]);
+
+  const matchingListings = useMemo(() => {
+    if (sourceFilter === "external" || sourceFilter === "community") {
+      return [];
+    }
+    return listings.filter((item) => {
+      if (stateFilter !== "all" && item.state !== stateFilter) return false;
+      if (
+        communityFilter !== "all" &&
+        normalise(item.ethnicGroup) !== normalise(communityFilter)
+      ) {
+        return false;
+      }
+      if (!queryValue) return hasActiveFilter;
+      return normalise(
         `${item.name} ${item.description} ${item.state} ${item.region} ${item.ethnicGroup} ${item.festivalType}`
-      ).includes(queryValue)
-    );
+      ).includes(queryValue);
+    });
+  }, [listings, sourceFilter, stateFilter, communityFilter, queryValue, hasActiveFilter]);
 
-  const matchingCultures =
-    cultures.filter((culture) =>
-      normalise(
-        `${culture.name} ${culture.region} ${culture.states.join(
-          " "
-        )} ${culture.description}`
-      ).includes(queryValue)
-    );
+  const matchingCultures = useMemo(() => {
+    if (sourceFilter === "external" || sourceFilter === "community") {
+      return [];
+    }
+    return cultures.filter((culture) => {
+      if (stateFilter !== "all" && !culture.states.includes(stateFilter)) {
+        return false;
+      }
+      if (
+        communityFilter !== "all" &&
+        normalise(culture.name) !== normalise(communityFilter)
+      ) {
+        return false;
+      }
+      if (!queryValue) return hasActiveFilter;
+      return normalise(
+        `${culture.name} ${culture.region} ${culture.states.join(" ")} ${
+          culture.description
+        } ${(culture.kingdomsAndInstitutions || []).join(" ")}`
+      ).includes(queryValue);
+    });
+  }, [sourceFilter, stateFilter, communityFilter, queryValue, hasActiveFilter]);
 
   const total =
     matchingPosts.length +
+    matchingExternal.length +
     matchingListings.length +
     matchingCultures.length;
+
+  const paginatedPosts = matchingPosts.slice(0, visibleCount);
 
   return (
     <>
       <section className="search-hero">
         <div className="container">
           <span className="eyebrow light">
-            Search
+            Multi-Facet Archival Explorer
           </span>
 
           <h1 className="heading">
-            Search Moji's Heritage
+            Search Moji&apos;s Heritage
           </h1>
 
           <div className="search-large">
@@ -2648,7 +3523,7 @@ export function SearchPage() {
                   event.target.value
                 )
               }
-              placeholder="Search history, culture, language, festival, food, people or places..."
+              placeholder="Search Nigerian artifacts, kingdoms, states, languages, festivals, people or places..."
               aria-label="Search history, culture, language, festival, food, people or places"
               autoFocus
             />
@@ -2657,139 +3532,280 @@ export function SearchPage() {
       </section>
 
       <section className="container section">
-        {search.trim() ? (
-          <>
-            <p className="result-count">
-              {total} results for{" "}
-              <strong>
-                “{search}”
-              </strong>
-            </p>
+        {/* Multi-Facet Archival Filter Bar */}
+        <div
+          className="card card-body"
+          style={{ marginBottom: "2rem" }}
+          aria-label="Archival Search Filters"
+        >
+          <div className="filters">
+            <div className="field">
+              <label htmlFor="search-category-filter">Content Type</label>
+              <select
+                id="search-category-filter"
+                value={categoryFilter}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setVisibleCount(9);
+                }}
+              >
+                <option value="all">All categories</option>
+                {categories.map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            {matchingCultures.length >
-              0 && (
-              <section className="search-group">
-                <SectionHeading
-                  title="Cultures"
-                />
+            <div className="field">
+              <label htmlFor="search-state-filter">Nigerian State</label>
+              <select
+                id="search-state-filter"
+                value={stateFilter}
+                onChange={(e) => {
+                  setStateFilter(e.target.value);
+                  setVisibleCount(9);
+                }}
+              >
+                <option value="all">All 36 States &amp; FCT</option>
+                {NIGERIAN_STATES_AND_FCT.map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <div className="search-simple-grid">
-                  {matchingCultures.map(
-                    (culture) => (
-                      <Link
-                        className="search-result-simple"
-                        key={
-                          culture.slug
-                        }
-                        to={`/cultures/${culture.slug}`}
-                      >
-                        <span className="tag">
-                          {
-                            culture.region
-                          }
-                        </span>
+            <div className="field">
+              <label htmlFor="search-community-filter">
+                Cultural Community
+              </label>
+              <select
+                id="search-community-filter"
+                value={communityFilter}
+                onChange={(e) => {
+                  setCommunityFilter(e.target.value);
+                  setVisibleCount(9);
+                }}
+              >
+                <option value="all">All Nigerian Communities</option>
+                {cultures.map((c) => (
+                  <option key={c.slug} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                        <strong>
-                          {
-                            culture.name
-                          }
-                        </strong>
+            <div className="field">
+              <label htmlFor="search-period-filter">Historical Period</label>
+              <select
+                id="search-period-filter"
+                value={periodFilter}
+                onChange={(e) => {
+                  setPeriodFilter(e.target.value);
+                  setVisibleCount(9);
+                }}
+              >
+                <option value="all">All Historical Periods</option>
+                {HISTORICAL_PERIODS.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                        <small>
-                          {
-                            culture.description
-                          }
-                        </small>
-                      </Link>
-                    )
-                  )}
-                </div>
-              </section>
-            )}
+            <div className="field">
+              <label htmlFor="search-classification-filter">
+                Material / Classification
+              </label>
+              <select
+                id="search-classification-filter"
+                value={classificationFilter}
+                onChange={(e) => {
+                  setClassificationFilter(e.target.value);
+                  setVisibleCount(9);
+                }}
+              >
+                <option value="all">All Classifications</option>
+                {ARTIFACT_CLASSIFICATIONS.map((cls) => (
+                  <option key={cls} value={cls}>
+                    {cls}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            {matchingPosts.length >
-              0 && (
-              <section className="search-group">
-                <SectionHeading
-                  title="Stories"
-                />
+            <div className="field">
+              <label htmlFor="search-source-filter">Source Collection</label>
+              <select
+                id="search-source-filter"
+                value={sourceFilter}
+                onChange={(e) => {
+                  setSourceFilter(e.target.value);
+                  setVisibleCount(9);
+                }}
+              >
+                <option value="all">All Verified Collections</option>
+                <option value="editorial">
+                  Verified Moji&apos;s Heritage Publications
+                </option>
+                <option value="community">
+                  Community-Contributed · Admin Approved
+                </option>
+                <option value="external">
+                  External Open-Access Museum Collections
+                </option>
+              </select>
+            </div>
 
-                <div className="grid cards">
-                  {matchingPosts.map(
-                    (post) => (
-                      <PostCard
-                        key={post.id}
-                        post={post}
-                        showCategory
-                      />
-                    )
-                  )}
-                </div>
-              </section>
-            )}
-
-            {matchingListings.length >
-              0 && (
-              <section className="search-group">
-                <SectionHeading
-                  title="Places & Experiences"
-                />
-
-                <div className="search-simple-grid">
-                  {matchingListings.map(
-                    (item) => (
-                      <Link
-                        className="search-result-simple"
-                        key={item.id}
-                        to={`/visit/${item.id}`}
-                      >
-                        <span className="tag">
-                          {
-                            item.festivalType
-                          }
-                        </span>
-
-                        <strong>
-                          {item.name}
-                        </strong>
-
-                        <small>
-                          {item.state} ·{" "}
-                          {
-                            item.ethnicGroup
-                          }
-                        </small>
-                      </Link>
-                    )
-                  )}
-                </div>
-              </section>
-            )}
-
-            {total === 0 && (
-              <EmptyState
-                title="Nothing matched your search"
-                text="Try a culture, state, historical figure, festival, language or food."
-                action="/"
-                actionLabel="Return Home"
-              />
-            )}
-          </>
-        ) : (
-          <div className="search-start">
-            <Search size={40} />
-
-            <h2 className="heading">
-              What would you like to
-              discover?
-            </h2>
-
-            <p className="muted">
-              Try Yoruba, Benin, Kano,
-              festival, language, food or
-              a place in Nigeria.
-            </p>
+            <div className="field">
+              <label htmlFor="search-sort-select">Sort By</label>
+              <select
+                id="search-sort-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="relevance">Relevance / Featured</option>
+                <option value="views">Most Viewed</option>
+                <option value="title">Alphabetical (A–Z)</option>
+              </select>
+            </div>
           </div>
+
+          {hasActiveFilter && (
+            <div style={{ marginTop: "0.85rem" }}>
+              <button
+                type="button"
+                className="btn outline"
+                onClick={resetAllFilters}
+              >
+                Reset All Search Filters
+              </button>
+            </div>
+          )}
+        </div>
+
+        <p className="result-count">
+          Showing <strong>{total}</strong> verified Nigerian heritage{" "}
+          {total === 1 ? "record" : "records"}
+          {search.trim() ? (
+            <>
+              {" "}
+              for <strong>“{search}”</strong>
+            </>
+          ) : null}
+        </p>
+
+        {matchingCultures.length > 0 && (
+          <section className="search-group">
+            <SectionHeading title="Nigerian Cultural Communities" />
+            <div className="search-simple-grid">
+              {matchingCultures.map((culture) => (
+                <Link
+                  className="search-result-simple"
+                  key={culture.slug}
+                  to={`/cultures/${culture.slug}`}
+                >
+                  <span className="tag">{culture.region}</span>
+                  <strong>{culture.name}</strong>
+                  <small>{culture.description}</small>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {paginatedPosts.length > 0 && (
+          <section className="search-group">
+            <SectionHeading title="Curated Stories & Approved Community Records" />
+            <div className="grid cards">
+              {paginatedPosts.map((post) => (
+                <PostCard key={post.id} post={post} showCategory />
+              ))}
+            </div>
+
+            {matchingPosts.length > visibleCount && (
+              <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={() => setVisibleCount((c) => c + 9)}
+                >
+                  Load More Records ({matchingPosts.length - visibleCount}{" "}
+                  remaining)
+                </button>
+              </div>
+            )}
+          </section>
+        )}
+
+        {matchingExternal.length > 0 && (
+          <section className="search-group">
+            <SectionHeading
+              title="External Open-Access Museum & Archival Records"
+              text="Verified Nigerian artifacts and encyclopedic entries with open licences."
+            />
+            <div className="grid cards">
+              {matchingExternal.map((item) => (
+                <article className="card" key={item.id}>
+                  <div className="card-body">
+                    <span className="tag">
+                      External Discovery · {item.providerName}
+                    </span>
+                    <h3 className="heading card-title">{item.title}</h3>
+                    <p className="muted">{item.summary}</p>
+                    <small
+                      className="muted"
+                      style={{ display: "block", marginBottom: "0.75rem" }}
+                    >
+                      {item.ethnicGroup} · {item.state} · {item.licence}
+                    </small>
+                    <a
+                      href={item.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-link"
+                    >
+                      Inspect Source Record ↗
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {matchingListings.length > 0 && (
+          <section className="search-group">
+            <SectionHeading title="Heritage Sites, Festivals & Destinations" />
+            <div className="search-simple-grid">
+              {matchingListings.map((item) => (
+                <Link
+                  className="search-result-simple"
+                  key={item.id}
+                  to={`/visit/${item.id}`}
+                >
+                  <span className="tag">{item.festivalType}</span>
+                  <strong>{item.name}</strong>
+                  <small>
+                    {item.state} · {item.ethnicGroup}
+                  </small>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {total === 0 && (
+          <EmptyState
+            title="Nothing matched your search or filters"
+            text="Try clearing one of the filters or search for a Nigerian community, state, kingdom, festival, or historical figure."
+            action="/search"
+            actionLabel="Explore All Records"
+          />
         )}
       </section>
     </>
@@ -4239,6 +5255,845 @@ export function Contact() {
             </p>
           </aside>
         </div>
+      </section>
+    </>
+  );
+}
+
+/* ----------------------------------
+   CONTRIBUTE TO THE ARCHIVE
+---------------------------------- */
+
+export function Contribute() {
+  const [searchParams] = useSearchParams();
+  const initialTab =
+    searchParams.get("tab") === "correction" ? "correction" : "submit";
+  const initialTargetRecord = searchParams.get("record") || "";
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [form, setForm] = useState({
+    title: "",
+    contentType: "artifact",
+    summary: "",
+    body: "",
+    state: "",
+    locality: "",
+    ethnicGroup: "",
+    language: "",
+    historicalPeriod:
+      "Imperial Benin, Oyo, Kanem-Bornu & Hausa States (16th – 18th Century)",
+    classification: "Copper-Alloy & Bronze Casting",
+    custodianOrCreator: "",
+    sourcesAndReferences: "",
+    contributorName: "",
+    attributionPreference: "Named Contributor",
+    contactEmail: "",
+    mediaUrl: "",
+    attachmentMeta: null,
+    copyrightDeclaration:
+      "Public Domain / CC BY-SA 4.0 Educational Attribution Permitted",
+    consentToReview: false,
+    consentToPublishIfApproved: false,
+    rightsConfirmation: false,
+    hasIdentifiableMedia: false,
+    identifiableMediaConsent: false,
+    honeypot: "",
+  });
+
+  const [correctionForm, setCorrectionForm] = useState({
+    referenceOrRecordId: initialTargetRecord,
+    requestType: "Factual / Cultural Correction",
+    requesterName: "",
+    contactEmail: "",
+    details: "",
+    sources: "",
+  });
+
+  const [busy, setBusy] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [confirmation, setConfirmation] = useState(null);
+  const [correctionConfirmation, setCorrectionConfirmation] = useState(null);
+
+  function handleFileMetadataChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setForm((prev) => ({ ...prev, attachmentMeta: null }));
+      return;
+    }
+    const meta = {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    };
+    const check = validateAttachmentFileMeta(meta);
+    if (!check.valid) {
+      setErrorMessage(check.error);
+      event.target.value = "";
+      return;
+    }
+    setErrorMessage("");
+    setForm((prev) => ({ ...prev, attachmentMeta: meta }));
+  }
+
+  async function handleSubmitContribution(event) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setErrorMessage("");
+    setConfirmation(null);
+    try {
+      const record = await createPublicSubmission(form);
+      setConfirmation(record);
+      setForm((prev) => ({
+        ...prev,
+        title: "",
+        summary: "",
+        body: "",
+        sourcesAndReferences: "",
+        mediaUrl: "",
+        attachmentMeta: null,
+      }));
+    } catch (error) {
+      setErrorMessage(error.message || "Unable to submit contribution.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSubmitCorrection(event) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setErrorMessage("");
+    setCorrectionConfirmation(null);
+    try {
+      const result = await submitCorrectionOrWithdrawalRequest(correctionForm);
+      setCorrectionConfirmation(result);
+      setCorrectionForm((prev) => ({
+        ...prev,
+        details: "",
+        sources: "",
+      }));
+    } catch (error) {
+      setErrorMessage(error.message || "Unable to submit request.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <section className="page-hero">
+        <div className="container">
+          <span className="eyebrow">
+            Admin-Curated Archival Submissions
+          </span>
+          <h1 className="heading">
+            Contribute to the Nigerian Cultural Archive
+          </h1>
+          <p>
+            Share documented Nigerian artifacts, oral histories, festivals,
+            indigenous terminology, heritage sites, or scholarly citations.
+            Every submission enters our private curatorial review queue and is
+            never displayed publicly until verified, approved, and published by
+            a Moji&apos;s Heritage administrator.
+          </p>
+        </div>
+      </section>
+
+      <section className="container section">
+        <div
+          role="tablist"
+          aria-label="Contribution Portal Mode"
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "submit"}
+            className={activeTab === "submit" ? "btn primary" : "btn outline"}
+            onClick={() => {
+              setActiveTab("submit");
+              setErrorMessage("");
+            }}
+          >
+            Submit Cultural Record or Artifact
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "correction"}
+            className={
+              activeTab === "correction" ? "btn primary" : "btn outline"
+            }
+            onClick={() => {
+              setActiveTab("correction");
+              setErrorMessage("");
+            }}
+          >
+            Submit Correction, Citation, or Withdrawal Request
+          </button>
+        </div>
+
+        {errorMessage && (
+          <div
+            className="notice"
+            role="alert"
+            style={{ borderColor: "#a61b1b", marginBottom: "1.25rem" }}
+          >
+            {errorMessage}
+          </div>
+        )}
+
+        {confirmation && activeTab === "submit" && (
+          <div
+            className="card card-body"
+            role="status"
+            style={{
+              marginBottom: "1.5rem",
+              border: "2px solid var(--gold-primary, #c89d54)",
+            }}
+          >
+            <span className="eyebrow">Submission Received Privately</span>
+            <h2 className="heading">
+              Thank You — Reference Code: <code>{confirmation.referenceCode}</code>
+            </h2>
+            <p>
+              Your contribution <strong>“{confirmation.title}”</strong> has been
+              placed in the private administrator review queue with status{" "}
+              <strong>{confirmation.status}</strong>. It will not appear on the
+              public website unless an administrator approves and publishes it.
+              Please save your reference code{" "}
+              <code>{confirmation.referenceCode}</code> in case you wish to
+              submit updates or request withdrawal later.
+            </p>
+          </div>
+        )}
+
+        {correctionConfirmation && activeTab === "correction" && (
+          <div
+            className="card card-body"
+            role="status"
+            style={{
+              marginBottom: "1.5rem",
+              border: "2px solid var(--gold-primary, #c89d54)",
+            }}
+          >
+            <span className="eyebrow">Request Logged</span>
+            <h2 className="heading">
+              Reference: <code>{correctionConfirmation.referenceCode}</code>
+            </h2>
+            <p>
+              Your {correctionConfirmation.requestType.toLowerCase()} for{" "}
+              <strong>{correctionConfirmation.referenceOrRecordId}</strong> has
+              been routed to the Moji&apos;s Heritage editorial and curatorial
+              review team.
+            </p>
+          </div>
+        )}
+
+        {activeTab === "submit" ? (
+          <form
+            className="form card card-body"
+            onSubmit={handleSubmitContribution}
+          >
+            <h2 className="heading">Archival Contribution Form</h2>
+            <p className="muted">
+              All submissions must relate to Nigerian cultural heritage,
+              history, communities, or artifacts with Nigerian provenance.
+            </p>
+
+            {/* Honeypot anti-spam field */}
+            <input
+              type="text"
+              name="website_url_hp"
+              tabIndex={-1}
+              autoComplete="off"
+              style={{ display: "none" }}
+              value={form.honeypot}
+              onChange={(e) => setForm({ ...form, honeypot: e.target.value })}
+            />
+
+            <div className="filters">
+              <div className="field">
+                <label htmlFor="contrib-title">Title of Artifact or Record *</label>
+                <input
+                  id="contrib-title"
+                  required
+                  placeholder="e.g. Igbesanmwan Ivory Saltcellar or Iseyin Loom Technique"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="contrib-type">Content Type *</label>
+                <select
+                  id="contrib-type"
+                  value={form.contentType}
+                  onChange={(e) =>
+                    setForm({ ...form, contentType: e.target.value })
+                  }
+                >
+                  {CONTRIBUTION_CONTENT_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="filters">
+              <div className="field">
+                <label htmlFor="contrib-state">Nigerian State *</label>
+                <select
+                  id="contrib-state"
+                  required
+                  value={form.state}
+                  onChange={(e) => setForm({ ...form, state: e.target.value })}
+                >
+                  <option value="">Select Nigerian State</option>
+                  {NIGERIAN_STATES_AND_FCT.map((st) => (
+                    <option key={st} value={st}>
+                      {st}
+                    </option>
+                  ))}
+                  <option value="National / Multi-State">
+                    National / Multi-State
+                  </option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="contrib-locality">Town / LGA / Locality</label>
+                <input
+                  id="contrib-locality"
+                  placeholder="e.g. Benin City, Oredo LGA or Igbo-Ukwu, Aguata LGA"
+                  value={form.locality}
+                  onChange={(e) =>
+                    setForm({ ...form, locality: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="contrib-community">
+                  Cultural Community / Ethnic Group *
+                </label>
+                <input
+                  id="contrib-community"
+                  required
+                  placeholder="e.g. Yoruba, Igbo, Hausa, Edo, Ijaw, Nupe..."
+                  value={form.ethnicGroup}
+                  onChange={(e) =>
+                    setForm({ ...form, ethnicGroup: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="filters">
+              <div className="field">
+                <label htmlFor="contrib-period">
+                  Historical Period or Date * (Includes Unknown / Approximate / Disputed)
+                </label>
+                <select
+                  id="contrib-period"
+                  required
+                  value={form.historicalPeriod}
+                  onChange={(e) =>
+                    setForm({ ...form, historicalPeriod: e.target.value })
+                  }
+                >
+                  {HISTORICAL_PERIODS.map((period) => (
+                    <option key={period} value={period}>
+                      {period}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="contrib-classification">
+                  Artifact / Record Classification
+                </label>
+                <select
+                  id="contrib-classification"
+                  value={form.classification}
+                  onChange={(e) =>
+                    setForm({ ...form, classification: e.target.value })
+                  }
+                >
+                  {ARTIFACT_CLASSIFICATIONS.map((cls) => (
+                    <option key={cls} value={cls}>
+                      {cls}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="contrib-language">Indigenous Language / Term</label>
+                <input
+                  id="contrib-language"
+                  placeholder="e.g. Yorùbá, Ẹ̀dó, Àsụsụ Ìgbò, Hausa..."
+                  value={form.language}
+                  onChange={(e) =>
+                    setForm({ ...form, language: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="contrib-custodian">
+                Creator, Guild, Royal Court, Custodian, or Historical Figure
+              </label>
+              <input
+                id="contrib-custodian"
+                placeholder="e.g. Igun Eronmwon Guild, National Museum Lagos, or Oral Custodian"
+                value={form.custodianOrCreator}
+                onChange={(e) =>
+                  setForm({ ...form, custodianOrCreator: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="contrib-summary">Short Summary (1–2 sentences)</label>
+              <textarea
+                id="contrib-summary"
+                rows="2"
+                placeholder="Concise overview of the cultural significance of this record..."
+                value={form.summary}
+                onChange={(e) => setForm({ ...form, summary: e.target.value })}
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="contrib-body">
+                Full Cultural &amp; Historical Description *
+              </label>
+              <textarea
+                id="contrib-body"
+                required
+                rows="8"
+                placeholder="Provide detailed historical context, material description, ritual or social usage, and regional variations..."
+                value={form.body}
+                onChange={(e) => setForm({ ...form, body: e.target.value })}
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="contrib-sources">
+                Sources, Archival References, Oral Custodians, or URLs *
+              </label>
+              <textarea
+                id="contrib-sources"
+                required
+                rows="3"
+                placeholder="Cite books, museum accession numbers, oral history elders/interviews, or institutional URLs..."
+                value={form.sourcesAndReferences}
+                onChange={(e) =>
+                  setForm({ ...form, sourcesAndReferences: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="filters">
+              <div className="field">
+                <label htmlFor="contrib-media-url">
+                  Direct Media / Photograph URL (Optional)
+                </label>
+                <input
+                  id="contrib-media-url"
+                  type="url"
+                  placeholder="https://..."
+                  value={form.mediaUrl}
+                  onChange={(e) =>
+                    setForm({ ...form, mediaUrl: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="contrib-file">
+                  Reference Document / Image Check (JPG, PNG, WebP, PDF ≤ 8 MB)
+                </label>
+                <input
+                  id="contrib-file"
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,.pdf"
+                  onChange={handleFileMetadataChange}
+                />
+              </div>
+            </div>
+
+            <div className="filters">
+              <div className="field">
+                <label htmlFor="contrib-name">Contributor Name *</label>
+                <input
+                  id="contrib-name"
+                  placeholder="Your full name or scholarly affiliation"
+                  value={form.contributorName}
+                  onChange={(e) =>
+                    setForm({ ...form, contributorName: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="contrib-attribution">
+                  Attribution Preference *
+                </label>
+                <select
+                  id="contrib-attribution"
+                  value={form.attributionPreference}
+                  onChange={(e) =>
+                    setForm({ ...form, attributionPreference: e.target.value })
+                  }
+                >
+                  <option value="Named Contributor">
+                    Credit my name publicly if published
+                  </option>
+                  <option value="Community / Institutional Credit">
+                    Credit my community or institution
+                  </option>
+                  <option value="Anonymous">
+                    Publish anonymously (Keep name private to admins)
+                  </option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="contrib-email">
+                  Contact Email (Optional — Private to Administrators)
+                </label>
+                <input
+                  id="contrib-email"
+                  type="email"
+                  placeholder="researcher@example.com"
+                  value={form.contactEmail}
+                  onChange={(e) =>
+                    setForm({ ...form, contactEmail: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="contrib-rights">
+                Copyright &amp; Licensing Declaration *
+              </label>
+              <select
+                id="contrib-rights"
+                value={form.copyrightDeclaration}
+                onChange={(e) =>
+                  setForm({ ...form, copyrightDeclaration: e.target.value })
+                }
+              >
+                <option value="Public Domain / CC BY-SA 4.0 Educational Attribution Permitted">
+                  Original work / CC BY-SA 4.0 Educational Attribution Permitted
+                </option>
+                <option value="CC0 1.0 Public Domain Dedication">
+                  Public Domain (CC0 1.0)
+                </option>
+                <option value="Permission Granted by Custodian for Moji's Heritage">
+                  Explicit Permission Granted by Cultural Custodian for Moji&apos;s
+                  Heritage
+                </option>
+              </select>
+            </div>
+
+            <fieldset
+              style={{
+                border: "1px solid rgba(160, 145, 120, 0.35)",
+                borderRadius: 12,
+                padding: "1rem",
+                marginTop: "0.75rem",
+              }}
+            >
+              <legend style={{ fontWeight: 700, padding: "0 0.5rem" }}>
+                Mandatory Consent &amp; Rights Declarations
+              </legend>
+
+              <label
+                style={{
+                  display: "flex",
+                  gap: "0.6rem",
+                  alignItems: "flex-start",
+                  marginBottom: "0.6rem",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  required
+                  checked={form.consentToReview}
+                  onChange={(e) =>
+                    setForm({ ...form, consentToReview: e.target.checked })
+                  }
+                />
+                <span>
+                  I consent to Moji&apos;s Heritage storing and reviewing this
+                  submission and its metadata in the private curatorial review
+                  queue. *
+                </span>
+              </label>
+
+              <label
+                style={{
+                  display: "flex",
+                  gap: "0.6rem",
+                  alignItems: "flex-start",
+                  marginBottom: "0.6rem",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  required
+                  checked={form.consentToPublishIfApproved}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      consentToPublishIfApproved: e.target.checked,
+                    })
+                  }
+                />
+                <span>
+                  I grant Moji&apos;s Heritage permission to publish this record
+                  with the selected attribution if it is approved by an
+                  administrator. *
+                </span>
+              </label>
+
+              <label
+                style={{
+                  display: "flex",
+                  gap: "0.6rem",
+                  alignItems: "flex-start",
+                  marginBottom: "0.6rem",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  required
+                  checked={form.rightsConfirmation}
+                  onChange={(e) =>
+                    setForm({ ...form, rightsConfirmation: e.target.checked })
+                  }
+                />
+                <span>
+                  I confirm that I have the right to submit this text/media and
+                  that it does not violate third-party copyright or sacred
+                  community restrictions. *
+                </span>
+              </label>
+
+              <label
+                style={{
+                  display: "flex",
+                  gap: "0.6rem",
+                  alignItems: "flex-start",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={form.hasIdentifiableMedia}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      hasIdentifiableMedia: e.target.checked,
+                      identifiableMediaConsent: e.target.checked
+                        ? form.identifiableMediaConsent
+                        : false,
+                    })
+                  }
+                />
+                <span>
+                  This submission includes identifiable photographs or voice/oral
+                  recordings of living individuals.
+                </span>
+              </label>
+
+              {form.hasIdentifiableMedia && (
+                <label
+                  style={{
+                    display: "flex",
+                    gap: "0.6rem",
+                    alignItems: "flex-start",
+                    marginTop: "0.5rem",
+                    paddingLeft: "1.5rem",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    required
+                    checked={form.identifiableMediaConsent}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        identifiableMediaConsent: e.target.checked,
+                      })
+                    }
+                  />
+                  <span>
+                    I confirm that informed consent has been obtained from the
+                    identifiable individuals or oral history interviewees. *
+                  </span>
+                </label>
+              )}
+            </fieldset>
+
+            <div style={{ marginTop: "1.25rem" }}>
+              <button className="btn primary" type="submit" disabled={busy}>
+                {busy
+                  ? "Submitting to Private Review Queue..."
+                  : "Submit Contribution for Admin Review"}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <form
+            className="form card card-body"
+            onSubmit={handleSubmitCorrection}
+          >
+            <h2 className="heading">
+              Correction, Source Citation, or Takedown Request
+            </h2>
+            <p className="muted">
+              Use this form to submit a factual correction, add a scholarly
+              citation to an existing page, or request the withdrawal/update of
+              a contribution using your reference code.
+            </p>
+
+            <div className="filters">
+              <div className="field">
+                <label htmlFor="corr-ref">
+                  Submission Reference Code or Record ID / Title *
+                </label>
+                <input
+                  id="corr-ref"
+                  required
+                  placeholder="e.g. MH-SUB-2026-XXXXXX or benin"
+                  value={correctionForm.referenceOrRecordId}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      referenceOrRecordId: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="corr-type">Request Type *</label>
+                <select
+                  id="corr-type"
+                  value={correctionForm.requestType}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      requestType: e.target.value,
+                    })
+                  }
+                >
+                  <option value="Factual / Cultural Correction">
+                    Factual or Cultural Context Correction
+                  </option>
+                  <option value="Additional Source Citation">
+                    Additional Source / Archival Citation
+                  </option>
+                  <option value="Contributor Withdrawal Request">
+                    Withdraw My Pending or Published Contribution
+                  </option>
+                  <option value="Copyright / Rights Takedown Notice">
+                    Copyright or Cultural Sensitivity Review
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div className="filters">
+              <div className="field">
+                <label htmlFor="corr-name">Your Name</label>
+                <input
+                  id="corr-name"
+                  value={correctionForm.requesterName}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      requesterName: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="corr-email">Contact Email</label>
+                <input
+                  id="corr-email"
+                  type="email"
+                  value={correctionForm.contactEmail}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      contactEmail: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="corr-details">
+                Details of Requested Correction or Withdrawal *
+              </label>
+              <textarea
+                id="corr-details"
+                required
+                rows="5"
+                placeholder="Explain the inaccuracy, missing attribution, or reason for withdrawal..."
+                value={correctionForm.details}
+                onChange={(e) =>
+                  setCorrectionForm({
+                    ...correctionForm,
+                    details: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="corr-sources">
+                Supporting Sources or Evidence
+              </label>
+              <textarea
+                id="corr-sources"
+                rows="3"
+                placeholder="Cite published scholarship, archival records, or community documentation..."
+                value={correctionForm.sources}
+                onChange={(e) =>
+                  setCorrectionForm({
+                    ...correctionForm,
+                    sources: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div style={{ marginTop: "1rem" }}>
+              <button className="btn primary" type="submit" disabled={busy}>
+                {busy ? "Sending Request..." : "Submit Request to Curators"}
+              </button>
+            </div>
+          </form>
+        )}
       </section>
     </>
   );

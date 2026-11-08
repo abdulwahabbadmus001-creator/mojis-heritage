@@ -28,6 +28,7 @@ import {
   CultureDetail,
   FestivalCalendar,
   Saved,
+  Contribute,
   NotFound
 } from "./pages/Public";
 
@@ -38,7 +39,10 @@ import {
   ListingsAdmin,
   CommentsAdmin,
   SiteSettings,
-  Analytics
+  Analytics,
+  SubmissionsAdmin,
+  ApiDiscoveryAdmin,
+  AuditAdmin
 } from "./admin/Admin";
 
 /*
@@ -217,6 +221,12 @@ export default function App() {
               element={<Saved />}
             />
 
+            {/* CONTRIBUTE TO THE ARCHIVE */}
+            <Route
+              path="/contribute"
+              element={<Contribute />}
+            />
+
             {/* =========================
                 SEARCH
             ========================== */}
@@ -319,6 +329,24 @@ export default function App() {
             <Route
               path="analytics"
               element={<Analytics />}
+            />
+
+            {/* SUBMISSIONS QUEUE */}
+            <Route
+              path="submissions"
+              element={<SubmissionsAdmin />}
+            />
+
+            {/* EXTERNAL API DISCOVERY */}
+            <Route
+              path="discovery"
+              element={<ApiDiscoveryAdmin />}
+            />
+
+            {/* AUDIT TRAIL */}
+            <Route
+              path="audit"
+              element={<AuditAdmin />}
             />
           </Route>
           </Routes>

@@ -1,6 +1,29 @@
 rules_version = '2';
-service firebase.storage { match /b/{bucket}/o {
- function admin(){ return request.auth != null && request.auth.token.admin == true; }
- match /content/{allPaths=**} { allow read: if true; allow write: if admin() && request.resource.size < 8 * 1024 * 1024 && request.resource.contentType.matches('image/.*'); }
- match /{allPaths=**} { allow read,write: if false; }
-}}
+service firebase.storage {
+  match /b/{bucket}/o {
+    function admin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Publicly published curatorial assets managed by administrators
+    match /content/{allPaths=**} {
+      allow read: if true;
+      allow write: if admin() &&
+                      request.resource.size < 8 * 1024 * 1024 &&
+                      request.resource.contentType.matches('image/.*');
+    }
+
+    // Private contributor submission attachments:
+    // Readable ONLY by administrators; never publicly accessible before publication
+    match /submissions_private/{allPaths=**} {
+      allow read: if admin();
+      allow write: if request.resource.size < 8 * 1024 * 1024 &&
+                      (request.resource.contentType.matches('image/(jpeg|png|webp)') ||
+                       request.resource.contentType == 'application/pdf');
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

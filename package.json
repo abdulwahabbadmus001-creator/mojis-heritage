@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/consent-and-theme.test.mjs",
+    "test": "node --test tests/consent-and-theme.test.mjs tests/museum-archive-and-security.test.mjs",
     "set-admin": "node scripts/set-admin.cjs"
   },
   "dependencies": {

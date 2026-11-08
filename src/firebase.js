@@ -30,25 +30,26 @@ import {
    private keys or other server secrets here.
 ====================================================== */
 
+const env = (typeof import.meta !== "undefined" && import.meta.env) ? import.meta.env : {};
+
 const firebaseConfig = {
   apiKey:
-    import.meta.env.VITE_FIREBASE_API_KEY,
+    env.VITE_FIREBASE_API_KEY,
 
   authDomain:
-    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    env.VITE_FIREBASE_AUTH_DOMAIN,
 
   projectId:
-    import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    env.VITE_FIREBASE_PROJECT_ID,
 
   storageBucket:
-    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    env.VITE_FIREBASE_STORAGE_BUCKET,
 
   messagingSenderId:
-    import.meta.env
-      .VITE_FIREBASE_MESSAGING_SENDER_ID,
+    env.VITE_FIREBASE_MESSAGING_SENDER_ID,
 
   appId:
-    import.meta.env.VITE_FIREBASE_APP_ID
+    env.VITE_FIREBASE_APP_ID
 };
 
 /* ======================================================
@@ -61,6 +62,8 @@ export const firebaseReady = Boolean(
   firebaseConfig.projectId &&
   firebaseConfig.appId
 );
+
+export const isFirebaseConfigured = firebaseReady;
 
 /* ======================================================
    FIREBASE APP
@@ -101,8 +104,7 @@ export const storage = app
 ====================================================== */
 
 const recaptchaSiteKey =
-  import.meta.env
-    .VITE_RECAPTCHA_ENTERPRISE_SITE_KEY;
+  env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY;
 
 if (
   app &&
@@ -125,7 +127,7 @@ if (
      * We intentionally avoid crashing the application
      * when that happens.
      */
-    if (import.meta.env.DEV) {
+    if (env.DEV) {
       console.warn(
         "Firebase App Check was not re-initialized.",
         error

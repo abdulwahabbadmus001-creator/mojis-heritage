@@ -10,6 +10,31 @@ import {
   saveSiteSettings,
 } from "../services/content";
 import { firebaseReady } from "../firebase";
+import {
+  SUBMISSION_STATUSES,
+  CONTRIBUTION_CONTENT_TYPES,
+  getAllSubmissionsForAdmin,
+  approveSubmission,
+  publishSubmission,
+  transitionSubmissionStatus,
+  getAllCorrectionRequestsForAdmin,
+  resolveCorrectionRequest,
+  getAdminAuditLogs,
+  recordAdminAuditEvent,
+} from "../services/contributions.js";
+import {
+  getProviderConfigs,
+  setProviderEnabled,
+  getAllDiscoveryRecords,
+  syncExternalHeritageSources,
+  updateExternalDiscoveryDecision,
+  getSyncStatusSummary,
+} from "../services/externalDiscovery.js";
+import {
+  HISTORICAL_PERIODS,
+  ARTIFACT_CLASSIFICATIONS,
+  cultures,
+} from "../data/cultures.js";
 const CATEGORIES = [
   ["heritage", "Cultural Heritage"],
   ["festivals", "Festivals"],
@@ -97,7 +122,13 @@ const blankPost = {
   title: "",
   category: "heritage",
   ethnicGroup: "",
+  state: "",
+  locality: "",
   region: "",
+  historicalPeriod: "Post-Independence & Contemporary Heritage (1960 – Present)",
+  classification: "Oral History, Festival & Living Tradition",
+  custodian: "Moji's Heritage Digital Archive",
+  licence: "Moji's Heritage Editorial Archive · Educational Use",
   summary: "",
   body: "",
   coverImage: "",
@@ -343,6 +374,12 @@ function AdminLayout() {
           <NavLink end className={navClass} to="/admin">
             Dashboard
           </NavLink>
+          <NavLink className={navClass} to="/admin/submissions">
+            Submissions Queue
+          </NavLink>
+          <NavLink className={navClass} to="/admin/discovery">
+            API Discovery & Sources
+          </NavLink>
           <NavLink className={navClass} to="/admin/posts">
             Stories & Posts
           </NavLink>
@@ -357,6 +394,9 @@ function AdminLayout() {
           </NavLink>
           <NavLink className={navClass} to="/admin/analytics">
             Analytics
+          </NavLink>
+          <NavLink className={navClass} to="/admin/audit">
+            Audit Trail
           </NavLink>
         </nav>
         <hr />
@@ -380,18 +420,36 @@ export function Dashboard() {
   const [posts, setPosts] = useState([]);
   const [listings, setListings] = useState([]);
   const [comments, setComments] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [discoveries, setDiscoveries] = useState([]);
+  const [corrections, setCorrections] = useState([]);
+  const [syncStatus, setSyncStatus] = useState(() => getSyncStatusSummary());
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [postData, listingData, commentData] = await Promise.all([
+        const [
+          postData,
+          listingData,
+          commentData,
+          submissionData,
+          discoveryData,
+          correctionData,
+        ] = await Promise.all([
           getAll("posts"),
           getAll("listings"),
           getAll("comments"),
+          getAllSubmissionsForAdmin(),
+          getAllDiscoveryRecords(),
+          getAllCorrectionRequestsForAdmin(),
         ]);
         setPosts(postData);
         setListings(listingData);
         setComments(commentData);
+        setSubmissions(submissionData);
+        setDiscoveries(discoveryData);
+        setCorrections(correctionData);
+        setSyncStatus(getSyncStatusSummary());
       } catch (error) {
         console.error("Dashboard loading error:", error);
       } finally {
@@ -400,8 +458,39 @@ export function Dashboard() {
     }
     loadDashboard();
   }, []);
-  const published = posts.filter((post) => post.isPublished).length;
+  const published =
+    posts.filter((post) => post.isPublished).length +
+    submissions.filter((sub) => sub.status === "Published").length;
   const drafts = posts.filter((post) => !post.isPublished).length;
+  const pendingSubmissionsCount = submissions.filter((sub) =>
+    ["Submitted", "Pending Review", "Needs Correction"].includes(sub.status)
+  ).length;
+  const approvedUnpublishedCount = submissions.filter(
+    (sub) => sub.status === "Approved" && !sub.isPublished
+  ).length;
+  const rejectedSubmissionsCount = submissions.filter(
+    (sub) => sub.status === "Rejected"
+  ).length;
+  const apiAwaitingReviewCount = discoveries.filter(
+    (item) => item.status === "Pending Review" || item.trustLevel === "needs_review"
+  ).length;
+  const failedApiJobsCount = Number(syncStatus?.failedJobsCount || 0);
+  const recentlyUpdatedCount =
+    posts.filter((post) => Boolean(post.updatedAt || post.publishedAt)).length +
+    submissions.filter((sub) => Boolean(sub.updatedAt)).length;
+  const verificationNeededCount =
+    submissions.filter(
+      (sub) =>
+        sub.status !== "Rejected" &&
+        (!sub.citationVerified || !sub.permissionVerified)
+    ).length +
+    discoveries.filter(
+      (item) =>
+        item.trustLevel === "needs_review" ||
+        item.trustLevel === "rights_restricted" ||
+        !item.licenceVerified
+    ).length +
+    corrections.filter((c) => c.status === "Pending Review").length;
   const pendingComments = comments.filter(
     (comment) => !comment.isApproved && !comment.isFlagged
   ).length;
@@ -419,25 +508,54 @@ export function Dashboard() {
     <>
       <h1 className="heading">Dashboard</h1>
       <p>
-        Manage Moji's Heritage stories, destinations, community discussions
-        and public information from one newsroom.
+        Manage Moji's Heritage stories, contributor submissions, external API
+        discoveries, destinations, community discussions, and public archive
+        settings from one unified newsroom.
       </p>
       <div className="grid cards">
         <div className="card card-body">
-          <b>Published stories</b>
+          <b>Total published records</b>
           <h2>{published}</h2>
+          <small className="muted">Stories & approved publications</small>
         </div>
         <div className="card card-body">
-          <b>Draft stories</b>
-          <h2>{drafts}</h2>
+          <b>Pending submissions</b>
+          <h2>{pendingSubmissionsCount}</h2>
+          <small className="muted">Private queue awaiting review</small>
         </div>
         <div className="card card-body">
-          <b>Visit listings</b>
-          <h2>{listings.length}</h2>
+          <b>Approved (unpublished)</b>
+          <h2>{approvedUnpublishedCount}</h2>
+          <small className="muted">Ready for admin publication</small>
         </div>
         <div className="card card-body">
-          <b>Pending comments</b>
-          <h2>{pendingComments}</h2>
+          <b>Rejected submissions</b>
+          <h2>{rejectedSubmissionsCount}</h2>
+          <small className="muted">Excluded from public archive</small>
+        </div>
+        <div className="card card-body">
+          <b>API content awaiting review</b>
+          <h2>{apiAwaitingReviewCount}</h2>
+          <small className="muted">External Nigerian heritage queue</small>
+        </div>
+        <div className="card card-body">
+          <b>Failed API jobs / errors</b>
+          <h2>{failedApiJobsCount}</h2>
+          <small className="muted">
+            Last sync: {readableDate(syncStatus?.lastSyncAt)}
+          </small>
+        </div>
+        <div className="card card-body">
+          <b>Recently updated records</b>
+          <h2>{recentlyUpdatedCount}</h2>
+          <small className="muted">{drafts} editorial drafts</small>
+        </div>
+        <div className="card card-body">
+          <b>Citation / rights verification</b>
+          <h2>{verificationNeededCount}</h2>
+          <small className="muted">
+            {pendingComments} pending comments · {listings.length} destinations
+          </small>
         </div>
       </div>
       <section className="section">
@@ -449,14 +567,23 @@ export function Dashboard() {
             flexWrap: "wrap",
           }}
         >
-          <Link className="btn primary" to="/admin/posts">
-            Create a story
+          <Link className="btn primary" to="/admin/submissions">
+            Review submissions ({pendingSubmissionsCount})
           </Link>
-          <Link className="btn earth" to="/admin/visit">
+          <Link className="btn earth" to="/admin/discovery">
+            Manage API discovery ({apiAwaitingReviewCount})
+          </Link>
+          <Link className="btn" to="/admin/posts">
+            Create or edit story
+          </Link>
+          <Link className="btn" to="/admin/visit">
             Add destination
           </Link>
           <Link className="btn" to="/admin/comments">
             Moderate comments
+          </Link>
+          <Link className="btn" to="/admin/audit">
+            View audit log
           </Link>
         </div>
       </section>
@@ -533,7 +660,13 @@ export function PostsAdmin() {
       title: String(form.title || "").trim(),
       category: form.category,
       ethnicGroup: String(form.ethnicGroup || "").trim(),
+      state: String(form.state || "").trim(),
+      locality: String(form.locality || "").trim(),
       region: form.region,
+      historicalPeriod: String(form.historicalPeriod || "").trim(),
+      classification: String(form.classification || "").trim(),
+      custodian: String(form.custodian || "").trim(),
+      licence: String(form.licence || "").trim(),
       summary: String(form.summary || "").trim(),
       body: String(form.body || "").trim(),
       coverImage: String(form.coverImage || "").trim(),
@@ -688,6 +821,62 @@ export function PostsAdmin() {
                 </option>
               ))}
               <option value="Nigeria">National / Nigeria</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Nigerian State</label>
+            <select
+              value={form.state || ""}
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  state: event.target.value,
+                })
+              }
+            >
+              <option value="">Select state / national</option>
+              {STATES.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
+              <option value="National / Multi-State">National / Multi-State</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Historical Period</label>
+            <select
+              value={form.historicalPeriod || ""}
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  historicalPeriod: event.target.value,
+                })
+              }
+            >
+              {HISTORICAL_PERIODS.map((period) => (
+                <option key={period} value={period}>
+                  {period}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label>Classification / Medium</label>
+            <select
+              value={form.classification || ""}
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  classification: event.target.value,
+                })
+              }
+            >
+              {ARTIFACT_CLASSIFICATIONS.map((cls) => (
+                <option key={cls} value={cls}>
+                  {cls}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -1744,6 +1933,1020 @@ export function Analytics() {
         Visit Planner search-filter analytics and registered-user statistics
         will become available when those events are recorded in Firestore.
       </div>
+    </>
+  );
+}
+
+export function SubmissionsAdmin() {
+  const { user } = useAuth();
+  const [submissions, setSubmissions] = useState([]);
+  const [corrections, setCorrections] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [stateFilter, setStateFilter] = useState("all");
+  const [communityFilter, setCommunityFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  const [reviewerNotes, setReviewerNotes] = useState("");
+  const [editDraft, setEditDraft] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  async function loadAll() {
+    setLoading(true);
+    try {
+      const [subs, corrs] = await Promise.all([
+        getAllSubmissionsForAdmin(),
+        getAllCorrectionRequestsForAdmin(),
+      ]);
+      setSubmissions(subs);
+      setCorrections(corrs);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadAll();
+  }, []);
+
+  const selectedSubmission = useMemo(
+    () => submissions.find((item) => item.id === selectedId) || null,
+    [submissions, selectedId]
+  );
+
+  function openSubmission(sub) {
+    setSelectedId(sub.id);
+    setReviewerNotes(sub.reviewerNotes || "");
+    setEditDraft({
+      title: sub.title || "",
+      summary: sub.summary || "",
+      body: sub.body || "",
+      ethnicGroup: sub.ethnicGroup || "",
+      state: sub.state || "",
+      historicalPeriod: sub.historicalPeriod || "",
+      sourcesAndReferences: sub.sourcesAndReferences || "",
+    });
+  }
+
+  const filteredSubmissions = useMemo(() => {
+    return submissions.filter((sub) => {
+      if (statusFilter !== "all" && sub.status !== statusFilter) return false;
+      if (typeFilter !== "all" && sub.contentType !== typeFilter) return false;
+      if (stateFilter !== "all" && sub.state !== stateFilter) return false;
+      if (
+        communityFilter !== "all" &&
+        String(sub.ethnicGroup || "").toLowerCase() !==
+          communityFilter.toLowerCase()
+      ) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        const hay = [
+          sub.title,
+          sub.referenceCode,
+          sub.contributorName,
+          sub.ethnicGroup,
+          sub.state,
+          sub.summary,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [
+    submissions,
+    statusFilter,
+    typeFilter,
+    stateFilter,
+    communityFilter,
+    searchQuery,
+  ]);
+
+  async function handleApproveOnly(sub) {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await approveSubmission(sub.id, {
+        adminEmail: user?.email || "admin",
+        reviewerNotes,
+        editedFields: editDraft || {},
+      });
+      await loadAll();
+      alert(
+        `Submission "${sub.title}" has been marked Approved (not yet published to the public archive).`
+      );
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handlePublishApproved(sub) {
+    if (busy) return;
+    if (sub.status !== "Approved" && sub.status !== "Published") {
+      alert(
+        "Approval and publication are distinct steps. Please click '1. Approve Submission' first, verify the preview, and then click '2. Publish to Public Archive'."
+      );
+      return;
+    }
+    if (
+      !window.confirm(
+        `Publish "${sub.title}" (${sub.referenceCode}) to the public Moji's Heritage archive now?`
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await publishSubmission(sub.id, {
+        adminEmail: user?.email || "admin",
+        reviewerNotes,
+      });
+      await loadAll();
+      alert(
+        `Submission "${sub.title}" is now Published to the public archive.`
+      );
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleStatusTransition(sub, nextStatus) {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await transitionSubmissionStatus(sub.id, nextStatus, {
+        adminEmail: user?.email || "admin",
+        reviewerNotes,
+      });
+      await loadAll();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleResolveCorrection(req, status) {
+    try {
+      await resolveCorrectionRequest(req.id, {
+        status,
+        adminEmail: user?.email || "admin",
+        resolutionNotes: `Reviewed by ${user?.email || "admin"}`,
+      });
+      await loadAll();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  return (
+    <>
+      <h1 className="heading">Submissions & Curatorial Review Queue</h1>
+      <p>
+        Review public contributions privately. Submissions never appear on the
+        public website until an administrator first <strong>Approves</strong>{" "}
+        and then explicitly <strong>Publishes</strong> them.
+      </p>
+
+      <div className="card card-body" style={{ marginBottom: "1.25rem" }}>
+        <div className="filters">
+          <div className="field">
+            <label htmlFor="sub-search">Search title, reference, contributor</label>
+            <input
+              id="sub-search"
+              placeholder="e.g. MH-SUB-2026 or Benin..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="sub-status-filter">Workflow Status</label>
+            <select
+              id="sub-status-filter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All statuses ({submissions.length})</option>
+              {SUBMISSION_STATUSES.map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="sub-type-filter">Content Type</label>
+            <select
+              id="sub-type-filter"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+            >
+              <option value="all">All content types</option>
+              {CONTRIBUTION_CONTENT_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="sub-state-filter">Nigerian State</label>
+            <select
+              id="sub-state-filter"
+              value={stateFilter}
+              onChange={(e) => setStateFilter(e.target.value)}
+            >
+              <option value="all">All states</option>
+              {STATES.map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="sub-community-filter">Cultural Community</label>
+            <select
+              id="sub-community-filter"
+              value={communityFilter}
+              onChange={(e) => setCommunityFilter(e.target.value)}
+            >
+              <option value="all">All communities</option>
+              {cultures.map((c) => (
+                <option key={c.slug} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {selectedSubmission && editDraft && (
+        <section
+          className="card card-body"
+          style={{
+            marginBottom: "1.5rem",
+            border: "2px solid var(--gold-primary, #c89d54)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: "1rem",
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <span className="pill">{selectedSubmission.referenceCode}</span>{" "}
+              <span className="pill">{selectedSubmission.status}</span>
+              <h2 className="heading" style={{ marginTop: "0.5rem" }}>
+                Curatorial Inspection: {selectedSubmission.title}
+              </h2>
+            </div>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setSelectedId(null)}
+            >
+              Close inspector
+            </button>
+          </div>
+
+          <div className="grid cards" style={{ marginTop: "1rem" }}>
+            <div className="card card-body">
+              <b>Contributor & Attribution</b>
+              <p>
+                {selectedSubmission.contributorName} (
+                {selectedSubmission.attributionPreference})
+              </p>
+              <small className="muted">
+                Contact: {selectedSubmission.contactEmail || "Not provided"}
+              </small>
+            </div>
+            <div className="card card-body">
+              <b>Rights & Consent Verification</b>
+              <p>
+                Review consent:{" "}
+                {selectedSubmission.consentToReview ? "Yes" : "No"} · Publish
+                consent:{" "}
+                {selectedSubmission.consentToPublishIfApproved ? "Yes" : "No"} ·
+                Rights confirmed:{" "}
+                {selectedSubmission.rightsConfirmation ? "Yes" : "No"}
+              </p>
+              <small className="muted">
+                Licence: {selectedSubmission.copyrightDeclaration}
+              </small>
+            </div>
+          </div>
+
+          <div className="filters" style={{ marginTop: "1rem" }}>
+            <div className="field">
+              <label>Title (Editable before approval)</label>
+              <input
+                value={editDraft.title}
+                onChange={(e) =>
+                  setEditDraft({ ...editDraft, title: e.target.value })
+                }
+              />
+            </div>
+            <div className="field">
+              <label>Cultural Community</label>
+              <input
+                value={editDraft.ethnicGroup}
+                onChange={(e) =>
+                  setEditDraft({ ...editDraft, ethnicGroup: e.target.value })
+                }
+              />
+            </div>
+            <div className="field">
+              <label>State</label>
+              <input
+                value={editDraft.state}
+                onChange={(e) =>
+                  setEditDraft({ ...editDraft, state: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="field" style={{ marginTop: "0.75rem" }}>
+            <label>Summary</label>
+            <textarea
+              rows="2"
+              value={editDraft.summary}
+              onChange={(e) =>
+                setEditDraft({ ...editDraft, summary: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field" style={{ marginTop: "0.75rem" }}>
+            <label>Full Description / Body</label>
+            <textarea
+              rows="6"
+              value={editDraft.body}
+              onChange={(e) =>
+                setEditDraft({ ...editDraft, body: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field" style={{ marginTop: "0.75rem" }}>
+            <label>Cited Sources & References</label>
+            <textarea
+              rows="3"
+              value={editDraft.sourcesAndReferences}
+              onChange={(e) =>
+                setEditDraft({
+                  ...editDraft,
+                  sourcesAndReferences: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          {selectedSubmission.mediaUrl && (
+            <div style={{ marginTop: "0.75rem" }}>
+              <strong>Submitted Media Preview:</strong>
+              <ImagePreview
+                src={selectedSubmission.mediaUrl}
+                alt={selectedSubmission.title}
+              />
+            </div>
+          )}
+
+          <div className="field" style={{ marginTop: "0.75rem" }}>
+            <label>Private Reviewer Notes (Recorded in Audit Trail)</label>
+            <textarea
+              rows="2"
+              placeholder="Document source verification, oral custodian checks, or requested revisions..."
+              value={reviewerNotes}
+              onChange={(e) => setReviewerNotes(e.target.value)}
+            />
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "0.65rem",
+              flexWrap: "wrap",
+              marginTop: "1rem",
+            }}
+          >
+            <button
+              type="button"
+              className="btn primary"
+              disabled={busy}
+              onClick={() => handleApproveOnly(selectedSubmission)}
+            >
+              1. Approve Submission (Keep Unpublished)
+            </button>
+            <button
+              type="button"
+              className="btn earth"
+              disabled={busy || selectedSubmission.status !== "Approved"}
+              title={
+                selectedSubmission.status !== "Approved"
+                  ? "Approve the submission first before publishing"
+                  : "Publish approved record to public archive"
+              }
+              onClick={() => handlePublishApproved(selectedSubmission)}
+            >
+              2. Publish Approved Record to Archive
+            </button>
+            <button
+              type="button"
+              className="btn"
+              disabled={busy}
+              onClick={() =>
+                handleStatusTransition(selectedSubmission, "Needs Correction")
+              }
+            >
+              Request Corrections
+            </button>
+            <button
+              type="button"
+              className="btn"
+              disabled={busy}
+              onClick={() =>
+                handleStatusTransition(selectedSubmission, "Rejected")
+              }
+            >
+              Reject
+            </button>
+            <button
+              type="button"
+              className="btn"
+              disabled={busy}
+              onClick={() =>
+                handleStatusTransition(selectedSubmission, "Archived")
+              }
+            >
+              Archive
+            </button>
+          </div>
+
+          {Array.isArray(selectedSubmission.revisions) &&
+            selectedSubmission.revisions.length > 0 && (
+              <div style={{ marginTop: "1.25rem" }}>
+                <strong>Revision & Moderation History</strong>
+                <ul style={{ marginTop: "0.5rem" }}>
+                  {selectedSubmission.revisions.map((rev, idx) => (
+                    <li key={idx} style={{ fontSize: "0.88rem" }}>
+                      <code>v{rev.version || idx + 1}</code> ·{" "}
+                      {readableDate(rev.timestamp)} ·{" "}
+                      <strong>{rev.action}</strong> ({rev.previousStatus} →{" "}
+                      {rev.newStatus}) by {rev.actor} — {rev.summary}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+        </section>
+      )}
+
+      {loading ? (
+        <p>Loading submissions queue...</p>
+      ) : filteredSubmissions.length === 0 ? (
+        <div className="card card-body">
+          <p className="muted">
+            No contributor submissions match the current filters.
+          </p>
+        </div>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Reference & Title</th>
+                <th>Type</th>
+                <th>Community / State</th>
+                <th>Contributor</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSubmissions.map((sub) => (
+                <tr key={sub.id}>
+                  <td>
+                    <code>{sub.referenceCode}</code>
+                    <br />
+                    <strong>{sub.title}</strong>
+                  </td>
+                  <td>{sub.contentType}</td>
+                  <td>
+                    {sub.ethnicGroup} · {sub.state}
+                  </td>
+                  <td>{sub.contributorName}</td>
+                  <td>
+                    <span className="pill">{sub.status}</span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() => openSubmission(sub)}
+                    >
+                      Inspect & Review
+                    </button>{" "}
+                    {sub.status !== "Approved" && sub.status !== "Published" && (
+                      <button
+                        type="button"
+                        onClick={() => handleApproveOnly(sub)}
+                      >
+                        Approve
+                      </button>
+                    )}{" "}
+                    {sub.status === "Approved" && (
+                      <button
+                        type="button"
+                        onClick={() => handlePublishApproved(sub)}
+                      >
+                        Publish
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <section className="section">
+        <h2 className="heading">
+          Contributor Correction & Takedown Requests ({corrections.length})
+        </h2>
+        {corrections.length === 0 ? (
+          <div className="card card-body">
+            <p className="muted">
+              No correction or withdrawal requests have been filed.
+            </p>
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Target Record</th>
+                  <th>Request Type</th>
+                  <th>Details</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {corrections.map((req) => (
+                  <tr key={req.id}>
+                    <td>
+                      <code>{req.referenceCode}</code>
+                    </td>
+                    <td>{req.referenceOrRecordId}</td>
+                    <td>{req.requestType}</td>
+                    <td style={{ maxWidth: 360 }}>{req.details}</td>
+                    <td>{req.status}</td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleResolveCorrection(req, "Resolved")
+                        }
+                      >
+                        Mark Resolved
+                      </button>{" "}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleResolveCorrection(req, "Dismissed")
+                        }
+                      >
+                        Dismiss
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </>
+  );
+}
+
+export function ApiDiscoveryAdmin() {
+  const { user } = useAuth();
+  const [providers, setProviders] = useState(() => getProviderConfigs());
+  const [records, setRecords] = useState([]);
+  const [syncStatus, setSyncStatus] = useState(() => getSyncStatusSummary());
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [providerFilter, setProviderFilter] = useState("all");
+  const [syncing, setSyncing] = useState(false);
+
+  async function loadDiscovery() {
+    const items = await getAllDiscoveryRecords();
+    setRecords(items);
+    setProviders(getProviderConfigs());
+    setSyncStatus(getSyncStatusSummary());
+  }
+
+  useEffect(() => {
+    loadDiscovery();
+  }, []);
+
+  async function handleSync(providerId = "all") {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const result = await syncExternalHeritageSources({ providerId });
+      setRecords(result.records);
+      setSyncStatus(result.syncSummary);
+      await recordAdminAuditEvent({
+        action: "EXTERNAL_API_SYNC",
+        targetType: "api_provider",
+        targetId: providerId,
+        targetTitle: `Synced ${providerId} (${result.newCount} items checked)`,
+        adminEmail: user?.email || "admin",
+        notes:
+          result.errors.length > 0
+            ? `Errors: ${result.errors.map((e) => e.message).join("; ")}`
+            : "Completed cleanly",
+      });
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  function handleToggleProvider(provider) {
+    const nextEnabled = !provider.enabled;
+    setProviderEnabled(provider.id, nextEnabled);
+    setProviders(getProviderConfigs());
+    recordAdminAuditEvent({
+      action: nextEnabled ? "ENABLE_API_PROVIDER" : "DISABLE_API_PROVIDER",
+      targetType: "api_provider",
+      targetId: provider.id,
+      targetTitle: provider.name,
+      adminEmail: user?.email || "admin",
+      notes: `Provider ${nextEnabled ? "enabled" : "disabled"} by administrator.`,
+    });
+  }
+
+  async function handleModerationAction(item, status, trustLevel) {
+    await updateExternalDiscoveryDecision(item.id, {
+      status,
+      isApprovedForPublic: status === "Published",
+      trustLevel: trustLevel || item.trustLevel,
+      adminEmail: user?.email || "admin",
+    });
+    await recordAdminAuditEvent({
+      action: `API_RECORD_${status.toUpperCase().replace(/\s+/g, "_")}`,
+      targetType: "external_discovery",
+      targetId: item.id,
+      targetTitle: item.title,
+      previousStatus: item.status,
+      newStatus: status,
+      adminEmail: user?.email || "admin",
+    });
+    await loadDiscovery();
+  }
+
+  const filteredRecords = useMemo(() => {
+    return records.filter((item) => {
+      if (statusFilter !== "all" && item.status !== statusFilter) return false;
+      if (providerFilter !== "all" && item.providerId !== providerFilter)
+        return false;
+      return true;
+    });
+  }, [records, statusFilter, providerFilter]);
+
+  return (
+    <>
+      <h1 className="heading">External API Discovery & Source Management</h1>
+      <p>
+        Manage open-access museum and encyclopedic APIs (The Met Open Access,
+        Wikipedia Nigeria Heritage, and Wikimedia Commons). All records pass
+        through strict Nigerian relevance filtering and licence verification.
+      </p>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "0.75rem",
+          flexWrap: "wrap",
+          marginBottom: "1.25rem",
+          alignItems: "center",
+        }}
+      >
+        <button
+          type="button"
+          className="btn primary"
+          disabled={syncing}
+          onClick={() => handleSync("all")}
+        >
+          {syncing
+            ? "Syncing Nigerian heritage APIs..."
+            : "Sync All Active Providers Now"}
+        </button>
+        <span className="muted">
+          Last sync: {readableDate(syncStatus?.lastSyncAt)} · Failed jobs:{" "}
+          {syncStatus?.failedJobsCount || 0}
+        </span>
+      </div>
+
+      <section className="section">
+        <h2 className="heading">Configured Open-Access Providers</h2>
+        <div className="grid cards">
+          {providers.map((provider) => (
+            <div className="card card-body" key={provider.id}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                }}
+              >
+                <strong>{provider.shortName}</strong>
+                <span className="pill">
+                  {provider.enabled ? "Active" : "Disabled"}
+                </span>
+              </div>
+              <p style={{ fontSize: "0.88rem", marginTop: "0.5rem" }}>
+                {provider.description}
+              </p>
+              <small className="muted">
+                Default licence: {provider.defaultLicence}
+              </small>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.5rem",
+                  marginTop: "0.75rem",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => handleToggleProvider(provider)}
+                >
+                  {provider.enabled ? "Disable source" : "Enable source"}
+                </button>
+                {provider.enabled && (
+                  <button
+                    type="button"
+                    className="btn earth"
+                    disabled={syncing}
+                    onClick={() => handleSync(provider.id)}
+                  >
+                    Sync source
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="section">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "1rem",
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
+          <h2 className="heading">
+            Discovered Nigerian Heritage Records ({filteredRecords.length})
+          </h2>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <select
+              aria-label="Filter by provider"
+              value={providerFilter}
+              onChange={(e) => setProviderFilter(e.target.value)}
+            >
+              <option value="all">All providers</option>
+              {providers.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.shortName}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Filter by moderation status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All statuses</option>
+              <option value="Published">Published (Public)</option>
+              <option value="Pending Review">Pending Review</option>
+              <option value="Rejected">Irrelevant / Rejected</option>
+              <option value="Duplicate">Duplicate</option>
+              <option value="Rights-Restricted">Rights-Restricted</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={{ overflowX: "auto", marginTop: "1rem" }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Artifact / Record</th>
+                <th>Source & Accession</th>
+                <th>Nigerian Relevance</th>
+                <th>Licence</th>
+                <th>Status</th>
+                <th>Curatorial Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRecords.map((item) => (
+                <tr key={item.id}>
+                  <td>
+                    <strong>{item.title}</strong>
+                    <br />
+                    <small>
+                      {item.ethnicGroup} · {item.state} ·{" "}
+                      {item.historicalPeriod}
+                    </small>
+                  </td>
+                  <td>
+                    {item.providerName}
+                    <br />
+                    <small>
+                      {item.accessionNumber || "Open Archive"} ·{" "}
+                      <a
+                        href={item.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Source link
+                      </a>
+                    </small>
+                  </td>
+                  <td>
+                    Score: {item.relevanceScore}
+                    <br />
+                    <small>
+                      {(item.relevanceSignals || []).slice(0, 4).join(", ")}
+                    </small>
+                  </td>
+                  <td>
+                    <small>{item.licence}</small>
+                  </td>
+                  <td>
+                    <span className="pill">{item.status}</span>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleModerationAction(
+                          item,
+                          "Published",
+                          "trusted_public"
+                        )
+                      }
+                    >
+                      Approve Public
+                    </button>{" "}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleModerationAction(
+                          item,
+                          "Pending Review",
+                          "needs_review"
+                        )
+                      }
+                    >
+                      Hold
+                    </button>{" "}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleModerationAction(
+                          item,
+                          "Rejected",
+                          "rejected_non_nigerian"
+                        )
+                      }
+                    >
+                      Irrelevant
+                    </button>{" "}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleModerationAction(item, "Duplicate", "duplicate")
+                      }
+                    >
+                      Duplicate
+                    </button>{" "}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleModerationAction(
+                          item,
+                          "Rights-Restricted",
+                          "rights_restricted"
+                        )
+                      }
+                    >
+                      Restrict Rights
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </>
+  );
+}
+
+export function AuditAdmin() {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAdminAuditLogs()
+      .then(setLogs)
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <>
+      <h1 className="heading">Administrative Audit Trail</h1>
+      <p>
+        Chronological record of submission reviews, approvals, publications,
+        correction resolutions, and external API moderation decisions.
+      </p>
+      {loading ? (
+        <p>Loading audit trail...</p>
+      ) : logs.length === 0 ? (
+        <div className="card card-body">
+          <p className="muted">
+            No administrative moderation actions recorded yet in this session.
+          </p>
+        </div>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Action</th>
+                <th>Target</th>
+                <th>Transition</th>
+                <th>Administrator</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((entry) => (
+                <tr key={entry.id}>
+                  <td>{readableDate(entry.timestamp)}</td>
+                  <td>
+                    <code>{entry.action}</code>
+                  </td>
+                  <td>
+                    <strong>{entry.targetTitle || entry.targetId}</strong>
+                    <br />
+                    <small className="muted">{entry.targetType}</small>
+                  </td>
+                  <td>
+                    {entry.previousStatus
+                      ? `${entry.previousStatus} → ${entry.newStatus}`
+                      : entry.newStatus || "—"}
+                  </td>
+                  <td>{entry.adminEmail}</td>
+                  <td>{entry.notes || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }
