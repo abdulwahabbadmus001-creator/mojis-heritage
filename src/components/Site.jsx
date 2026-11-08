@@ -13,6 +13,12 @@ import {
   getSiteSettings
 } from "../services/content";
 
+import {
+  readValidTheme,
+  writeValidTheme,
+  useConsent
+} from "../context/Consent";
+
 /* ======================================================
    INTERNAL SVG ICON SYSTEM
 
@@ -132,6 +138,30 @@ function ShareIcon({ size = 18 }) {
   );
 }
 
+function SunIcon({ size = 17 }) {
+  return (
+    <IconBase size={size}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="m6.34 17.66-1.41 1.41" />
+      <path d="m19.07 4.93-1.41 1.41" />
+    </IconBase>
+  );
+}
+
+function MoonIcon({ size = 17 }) {
+  return (
+    <IconBase size={size}>
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+    </IconBase>
+  );
+}
+
 /* ======================================================
    BRAND ICONS
 
@@ -207,6 +237,10 @@ export function Navbar() {
   const [open, setOpen] =
     useState(false);
 
+  const [theme, setTheme] = useState(
+    () => readValidTheme()
+  );
+
   const location = useLocation();
 
   const menuRef = useRef(null);
@@ -218,6 +252,14 @@ export function Navbar() {
   function closeMenu() {
     setOpen(false);
   }
+
+  function toggleTheme() {
+    setTheme((prev) => (prev === "noir" ? "archives" : "noir"));
+  }
+
+  useEffect(() => {
+    writeValidTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     setOpen(false);
@@ -336,30 +378,65 @@ export function Navbar() {
           >
             <SearchIcon />
           </Link>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="theme-toggle-pill"
+            aria-label={
+              theme === "noir"
+                ? "Switch to Archives Light Theme"
+                : "Switch to Gallery Noir Dark Theme"
+            }
+            title={
+              theme === "noir"
+                ? "Current: Gallery Noir (Switch to Archives)"
+                : "Current: Archives (Switch to Gallery Noir)"
+            }
+          >
+            {theme === "noir" ? <SunIcon size={15} /> : <MoonIcon size={15} />}
+            <span>{theme === "noir" ? "Archives" : "Gallery Noir"}</span>
+          </button>
         </nav>
 
-        <button
-          type="button"
-          className="btn nav-menu-button"
-          aria-label={
-            open
-              ? "Close navigation menu"
-              : "Open navigation menu"
-          }
-          aria-expanded={open}
-          aria-controls="mobile-navigation"
-          onClick={() =>
-            setOpen(
-              (current) => !current
-            )
-          }
-        >
-          {open ? (
-            <CloseIcon />
-          ) : (
-            <MenuIcon />
-          )}
-        </button>
+        <div className="nav-mobile-controls">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="theme-toggle-pill mobile-theme-pill"
+            aria-label={
+              theme === "noir"
+                ? "Switch to Archives Light Theme"
+                : "Switch to Gallery Noir Dark Theme"
+            }
+          >
+            {theme === "noir" ? <SunIcon size={15} /> : <MoonIcon size={15} />}
+            <span>{theme === "noir" ? "Light" : "Noir"}</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn nav-menu-button"
+            aria-label={
+              open
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
+            aria-expanded={open}
+            aria-controls="mobile-navigation"
+            onClick={() =>
+              setOpen(
+                (current) => !current
+              )
+            }
+          >
+            {open ? (
+              <CloseIcon />
+            ) : (
+              <MenuIcon />
+            )}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -488,6 +565,9 @@ export function Footer() {
   const [settings, setSettings] =
     useState({});
 
+  const { openPreferencesManager } =
+    useConsent();
+
   const channel =
     import.meta.env.VITE_YOUTUBE_CHANNEL_URL ||
     "https://www.youtube.com";
@@ -589,6 +669,18 @@ export function Footer() {
             <Link to="/privacy">
               Privacy Policy
             </Link>
+
+            <Link to="/cookies">
+              Cookie &amp; Storage Policy
+            </Link>
+
+            <button
+              type="button"
+              className="footer-link-button"
+              onClick={openPreferencesManager}
+            >
+              Cookie &amp; Storage Preferences
+            </button>
 
             <Link to="/contact">
               Contact Us

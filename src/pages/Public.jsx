@@ -1,4 +1,4 @@
-﻿import {
+import {
   useEffect,
   useMemo,
   useState
@@ -10,6 +10,10 @@ import {
   useParams,
   useSearchParams
 } from "react-router-dom";
+
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import "./article-markdown.css";
 
 import {
   Bookmark,
@@ -77,6 +81,14 @@ import {
   addRecentlyViewed,
   getRecentlyViewed
 } from "../hooks/useRecentlyViewed";
+
+import {
+  useConsent,
+  CONSENT_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+  SAVED_POSTS_KEY,
+  RECENTLY_VIEWED_KEY
+} from "../context/Consent";
 
 import {
   firebaseReady,
@@ -305,6 +317,78 @@ function SectionHeading({
 }
 
 /* ----------------------------------
+   PROVENANCE TIMELINE CHAPTERS
+   (Split-Screen Artifact Viewer Data)
+---------------------------------- */
+
+const HERITAGE_TIMELINE_CHAPTERS = [
+  {
+    id: "nok-terracotta",
+    era: "c. 900 BCE – 200 CE • CENTRAL NIGERIA",
+    periodLabel: "ERA I · ARCHAEOLOGICAL RECORD",
+    title: "01. The Nok Terracotta & Early Iron Tradition",
+    summary:
+      "Archaeological excavations across central Nigeria (first identified near Nok village in Kaduna State in 1928) have uncovered large-scale coil-built terracotta sculptures alongside early iron-smelting furnaces dated between the first millennium BCE and second century CE.",
+    material: "Coarse-grained Fired Clay & Iron Slag",
+    provenanceContext: "Central Nigeria (Kaduna & Benue Valleys) · Ref: NCMM / Breunig (2014)",
+    focalPoint: "center 24%",
+    zoomScale: 1.0,
+    detailCallout: "Illustrative Plate · Nok-era terracotta & ironworking scholarship",
+    image:
+      "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1400&q=80",
+    storyLink: "/histories"
+  },
+  {
+    id: "igbo-ukwu",
+    era: "9th – 10th CENTURY CE • ANAMBRA VALLEY",
+    periodLabel: "ERA II · METALLURGICAL TRADITION",
+    title: "02. Igbo-Ukwu Lost-Wax Bronzes",
+    summary:
+      "Excavated by archaeologist Thurstan Shaw (1959–1964) at Igbo Isaiah, Igbo Richard, and Igbo Jonah, the Igbo-Ukwu corpus demonstrates sophisticated leaded-bronze cire-perdue (lost-wax) casting and long-distance trade networks associated with the Eze Nri institution.",
+    material: "Leaded Bronze, Copper & Glass Beads",
+    provenanceContext: "Igbo-Ukwu, Anambra State · Ref: Shaw (1970) / NCMM Lagos",
+    focalPoint: "center 45%",
+    zoomScale: 1.18,
+    detailCallout: "Illustrative Plate · Igbo-Ukwu bronze-casting & Nri ritual context",
+    image:
+      "https://images.unsplash.com/photo-1544967082-d9d25d867d66?auto=format&fit=crop&w=1400&q=80",
+    storyLink: "/post/ozo"
+  },
+  {
+    id: "ife-naturalism",
+    era: "12th – 15th CENTURY CE • ILÉ-IFẸ̀",
+    periodLabel: "ERA III · CLASSICAL NATURALISM",
+    title: "03. Sacred Naturalism of Ancient Ilé-Ifẹ̀",
+    summary:
+      "In Yorùbá oral tradition and archaeological research at sites such as Wunmonije Compound and Ita Yemoo, medieval Ilé-Ifẹ̀ artists produced naturalistic copper-alloy and terracotta sculptures interpreted by scholars as royal and sacred effigies.",
+    material: "Copper Alloy (Brass/Bronze) & Terracotta",
+    provenanceContext: "Ilé-Ifẹ̀, Osun State · Ref: Ife Museum (NCMM) / Willett (1967)",
+    focalPoint: "center 18%",
+    zoomScale: 1.26,
+    detailCallout: "Illustrative Plate · Classical Ilé-Ifẹ̀ portraiture & facial striations",
+    image:
+      "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1400&q=80",
+    storyLink: "/cultures/yoruba"
+  },
+  {
+    id: "benin-guilds",
+    era: "15th – 19th CENTURY CE • EDO KINGDOM",
+    periodLabel: "ERA IV · COURT HISTORIOGRAPHY",
+    title: "04. Royal Guilds of the Benin Kingdom",
+    summary:
+      "Organized under the Oba in Benin City, hereditary guilds of brass-casters (Igun Eronmwon) and ivory carvers (Igbesanmwan) recorded dynastic history, palace rituals, and diplomacy prior to the 1897 British expedition and subsequent global restitution efforts.",
+    material: "Cast Brass, Elephant Ivory & Coral Regalia",
+    provenanceContext: "Benin City, Edo State · Ref: Benin National Museum / Digital Benin",
+    focalPoint: "center 35%",
+    zoomScale: 1.12,
+    detailCallout: "Illustrative Plate · Benin court guild traditions & historical memory",
+    image:
+      "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=1400&q=80",
+    storyLink: "/post/benin"
+  }
+];
+
+/* ----------------------------------
    HOME
 ---------------------------------- */
 
@@ -321,6 +405,20 @@ export function Home() {
   const [searchValue, setSearchValue] =
     useState("");
 
+  const [lightingMode, setLightingMode] =
+    useState("raking");
+
+  const [hotspotOpen, setHotspotOpen] =
+    useState(false);
+
+  const [activeChapterId, setActiveChapterId] =
+    useState(HERITAGE_TIMELINE_CHAPTERS[0].id);
+
+  const [artifactZoom, setArtifactZoom] =
+    useState(1);
+
+  const { choices } = useConsent();
+
   const navigate = useNavigate();
 
   const channel =
@@ -336,11 +434,13 @@ export function Home() {
     getListings()
       .then(setListings)
       .catch(() => setListings([]));
+  }, []);
 
+  useEffect(() => {
     setRecent(
       getRecentlyViewed()
     );
-  }, []);
+  }, [choices.preferences]);
 
   function submitSearch(event) {
     event.preventDefault();
@@ -366,71 +466,475 @@ export function Home() {
         "festivals"
     );
 
+  const featuredPrimary =
+    posts[0] || seedPosts[0];
+
+  const activeChapter =
+    HERITAGE_TIMELINE_CHAPTERS.find(
+      (item) => item.id === activeChapterId
+    ) || HERITAGE_TIMELINE_CHAPTERS[0];
+
   return (
     <>
-      <section className="hero">
-        <div className="container hero-content">
-          <span className="hero-kicker">
-            Nigeria's living memory
-          </span>
+      {/* ============================================================
+          LAYOUT 1: IMMERSIVE HERO SCREEN (Full-Bleed Stage + Glass HUD)
+      ============================================================ */}
+      <section
+        className={`hero hero-immersive-stage lighting-${lightingMode}`}
+        aria-label="Immersive Cultural Exhibition Stage"
+      >
+        <div className="hero-aurora-glow" aria-hidden="true" />
 
-          <h1 className="heading">
-            Discover Nigeria.
-            <br />
-            Understand Our Heritage.
-          </h1>
+        <div className="container hero-stage-grid">
+          {/* Left Editorial Liquid Glass Plaque */}
+          <div className="hero-content glass-noir hero-glass-plaque">
+            <div className="hero-telemetry-row">
+              <span className="hero-kicker mono-eyebrow">
+                NIGERIA&apos;S LIVING MEMORY
+              </span>
+              <span className="glass-pill-badge">
+                9.0820° N, 8.6753° E
+              </span>
+            </div>
 
-          <p>
-            Explore the peoples,
-            kingdoms, languages,
-            festivals, foods, places and
-            living traditions that make
-            up Nigeria's cultural story.
-          </p>
+            <h1 className="heading hero-display-title">
+              Discover Nigeria.
+              <br />
+              Understand Our Heritage.
+            </h1>
 
-          <form
-            className="hero-search"
-            onSubmit={submitSearch}
+            <p className="hero-lead">
+              Explore the peoples,
+              kingdoms, languages,
+              festivals, foods, places and
+              living traditions that make
+              up Nigeria&apos;s cultural story.
+            </p>
+
+            <form
+              className="hero-search glass-search-bar"
+              onSubmit={submitSearch}
+            >
+              <Search size={21} />
+
+              <input
+                type="search"
+                value={searchValue}
+                onChange={(event) =>
+                  setSearchValue(
+                    event.target.value
+                  )
+                }
+                placeholder="Search cultures, people, festivals, foods or places..."
+                aria-label="Search Moji's Heritage"
+              />
+
+              <button
+                className="btn earth"
+                type="submit"
+              >
+                Search
+              </button>
+            </form>
+
+            <div className="hero-actions">
+              <Link
+                className="btn earth"
+                to="/cultures"
+              >
+                Explore Cultures
+              </Link>
+
+              <Link
+                className="btn hero-outline"
+                to="/visit"
+              >
+                Plan a Visit
+              </Link>
+
+              <a
+                className="btn hero-glass-link"
+                href="#artifact-provenance-viewer"
+              >
+                Inspect 3,000-Year Timeline ↓
+              </a>
+            </div>
+          </div>
+
+          {/* Right Floating Curator HUD & Hotspot Pin */}
+          <aside
+            className="hero-hud-column"
+            aria-label="Curatorial Stage Telemetry"
           >
-            <Search size={21} />
+            {/* Interactive Artifact Hotspot Pin */}
+            <div className="hero-hotspot-wrap">
+              <button
+                type="button"
+                className="glass-pill-noir hotspot-trigger"
+                aria-expanded={hotspotOpen}
+                onClick={() =>
+                  setHotspotOpen((prev) => !prev)
+                }
+              >
+                <span className="hotspot-dot" aria-hidden="true" />
+                <span>ANNOTATION 01: LIVING ARCHIVE</span>
+              </button>
 
-            <input
-              type="search"
-              value={searchValue}
-              onChange={(event) =>
-                setSearchValue(
-                  event.target.value
-                )
-              }
-              placeholder="Search cultures, people, festivals, foods or places..."
-              aria-label="Search Moji's Heritage"
+              {hotspotOpen && (
+                <div className="glass-noir hotspot-popover" role="region" aria-label="Curatorial note">
+                  <span className="mono-eyebrow">CURATORIAL FIELD NOTE</span>
+                  <p>
+                    From the 8,000-year-old Dufuna canoe in Yobe to the royal
+                    bronze guilds of Benin and weaving looms of Iseyin, Nigerian
+                    heritage spans over 250 distinct linguistic communities.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Gallery Lighting Rig Controller */}
+            <div className="glass-noir hero-telemetry-dock">
+              <div className="telemetry-dock-header">
+                <span className="mono-eyebrow">GALLERY LIGHTING RIG</span>
+                <span className="telemetry-status">STAGE PRESET</span>
+              </div>
+
+              <div className="lighting-preset-grid" role="group" aria-label="Stage Lighting Mode">
+                <button
+                  type="button"
+                  aria-pressed={lightingMode === "raking"}
+                  className={
+                    lightingMode === "raking"
+                      ? "lighting-btn active"
+                      : "lighting-btn"
+                  }
+                  onClick={() => setLightingMode("raking")}
+                >
+                  ☀ Raking Gold
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={lightingMode === "chiaroscuro"}
+                  className={
+                    lightingMode === "chiaroscuro"
+                      ? "lighting-btn active"
+                      : "lighting-btn"
+                  }
+                  onClick={() => setLightingMode("chiaroscuro")}
+                >
+                  ◐ Chiaroscuro
+                </button>
+              </div>
+
+              <div className="telemetry-metrics">
+                <div>
+                  <small>CULTURAL ZONES</small>
+                  <strong>6 Regions · 36 States</strong>
+                </div>
+                <div>
+                  <small>CURATED ARCHIVE</small>
+                  <strong>{posts.length || seedPosts.length}+ Editions</strong>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* ============================================================
+          LAYOUT 2: BENTO GRID EXHIBITION DASHBOARD
+      ============================================================ */}
+      <section
+        className="container section bento-exhibition-section"
+        aria-labelledby="bento-exhibition-heading"
+      >
+        <SectionHeading
+          eyebrow="Curated Digital Exhibition"
+          title="The Living Heritage Bento"
+          text="An interconnected view of featured masterworks, oral proverbs, geospatial sites, and historical timelines."
+          link="/heritage"
+          linkLabel="Open full archive"
+        />
+
+        <div className="bento-grid">
+          {/* CELL 1: Primary 8-Col Feature Exhibition */}
+          <article className="bento-cell bento-cell-hero">
+            <img
+              src={featuredPrimary.coverImage}
+              alt={featuredPrimary.title}
+              className="bento-hero-media"
+              loading="lazy"
             />
+            <div className="bento-hero-scrim" aria-hidden="true" />
 
-            <button
-              className="btn earth"
-              type="submit"
-            >
-              Search
-            </button>
-          </form>
+            <div className="bento-hero-top">
+              <span className="glass-pill-noir">
+                FEATURED DOSSIER • {CATEGORY_LABELS[featuredPrimary.category] || "HERITAGE"}
+              </span>
+              {featuredPrimary.region && (
+                <span className="glass-pill-noir">
+                  {featuredPrimary.region}
+                </span>
+              )}
+            </div>
 
-          <div className="hero-actions">
-            <Link
-              className="btn earth"
-              to="/cultures"
-            >
-              Explore Cultures
+            <div className="glass-noir bento-hero-plaque">
+              <h3 id="bento-exhibition-heading" className="heading">
+                <Link to={`/post/${featuredPrimary.id}`}>
+                  {featuredPrimary.title}
+                </Link>
+              </h3>
+              <p>{featuredPrimary.summary}</p>
+              <div className="bento-hero-actions">
+                <Link className="btn earth" to={`/post/${featuredPrimary.id}`}>
+                  Enter Exhibition Story →
+                </Link>
+                <span className="bento-meta-pill">
+                  <Clock size={15} />
+                  {readingTime(featuredPrimary.body)}
+                </span>
+              </div>
+            </div>
+          </article>
+
+          {/* CELL 2: Oral Proverb & Indigenous Lexicon */}
+          <article className="bento-cell bento-cell-side glass-surface">
+            <span className="mono-eyebrow">LIVING LEXICON • ORAL WISDOM</span>
+            <blockquote className="bento-proverb">
+              <p className="heading">
+                &ldquo;Odò kì í ṣàn kó gbàgbé orísun rẹ̀.&rdquo;
+              </p>
+              <footer>
+                — A river does not flow so far that it forgets its source.
+                <span>Yorùbá Proverb · South West Archive</span>
+              </footer>
+            </blockquote>
+            <Link className="text-link" to="/languages">
+              Explore Nigerian Languages →
             </Link>
+          </article>
 
-            <Link
-              className="btn hero-outline"
-              to="/visit"
-            >
-              Plan a Visit
+          {/* CELL 3: Geospatial Cultural Atlas */}
+          <article className="bento-cell bento-cell-side glass-surface">
+            <div className="bento-card-head">
+              <span className="mono-eyebrow">GEOSPATIAL ATLAS</span>
+              <MapPin size={18} />
+            </div>
+            <h3 className="heading">
+              {listings.length || 4} Verified Heritage Sites &amp; Festivals
+            </h3>
+            <p className="muted">
+              Navigate sacred groves, royal palaces, and seasonal carnivals
+              across Nigeria&apos;s six geopolitical zones.
+            </p>
+            <Link className="text-link" to="/visit">
+              Launch Interactive Map →
             </Link>
+          </article>
+
+          {/* CELL 4: Chronological Span Meter */}
+          <article className="bento-cell bento-cell-third glass-surface">
+            <span className="mono-eyebrow">CHRONOLOGICAL DEPTH</span>
+            <div className="bento-stat-figure heading">
+              3,000+ <span>Years</span>
+            </div>
+            <p className="muted">
+              Continuous material culture from Nok terracotta and Igbo-Ukwu
+              metallurgy to living festivals.
+            </p>
+            <div className="bento-progress-track" aria-hidden="true">
+              <div className="bento-progress-fill" />
+            </div>
+          </article>
+
+          {/* CELL 5: Royal & Historical Personalities */}
+          <article className="bento-cell bento-cell-third glass-surface">
+            <span className="mono-eyebrow">HEROES &amp; HEROINES</span>
+            <h3 className="heading">Queen Amina &amp; Historic Leaders</h3>
+            <p className="muted">
+              Biographies of rulers, scholars, warriors, and cultural pioneers
+              who shaped Nigerian memory.
+            </p>
+            <Link className="text-link" to="/heroes">
+              Read Biographies →
+            </Link>
+          </article>
+
+          {/* CELL 6: Culinary Heritage */}
+          <article className="bento-cell bento-cell-third glass-surface">
+            <span className="mono-eyebrow">CULINARY ARCHIVE</span>
+            <h3 className="heading">Traditional Foods &amp; Table</h3>
+            <p className="muted">
+              Regional preparation, indigenous ingredients, and ceremonial
+              hospitality across communities.
+            </p>
+            <Link className="text-link" to="/foods">
+              Explore Culinary Traditions →
+            </Link>
+          </article>
+        </div>
+      </section>
+
+      {/* ============================================================
+          LAYOUT 3: SPLIT-SCREEN ARTIFACT & PROVENANCE VIEWER
+      ============================================================ */}
+      <section
+        id="artifact-provenance-viewer"
+        className="split-artifact-section"
+        aria-labelledby="split-viewer-heading"
+      >
+        <div className="container">
+          <SectionHeading
+            eyebrow="Interactive Provenance Dossier"
+            title="Masterworks of Nigerian Civilization"
+            text="Select any chronological era on the right to shift the optical inspection lens and examine material details."
+            link="/histories"
+            linkLabel="All historical essays"
+          />
+
+          <div className="split-viewer-grid">
+            {/* LEFT: Sticky High-Impact Media Inspection Stage */}
+            <div className="split-media-stage glass-noir">
+              <div className="split-stage-toolbar">
+                <span className="glass-pill-noir">
+                  {activeChapter.periodLabel}
+                </span>
+
+                <div className="split-zoom-controls" role="group" aria-label="Artifact Zoom Controls">
+                  <button
+                    type="button"
+                    className="zoom-btn"
+                    onClick={() =>
+                      setArtifactZoom((z) => Math.max(1, +(z - 0.15).toFixed(2)))
+                    }
+                    aria-label="Zoom out artifact"
+                  >
+                    −
+                  </button>
+                  <span className="zoom-readout">
+                    {Math.round(activeChapter.zoomScale * artifactZoom * 100)}%
+                  </span>
+                  <button
+                    type="button"
+                    className="zoom-btn"
+                    onClick={() =>
+                      setArtifactZoom((z) => Math.min(1.45, +(z + 0.15).toFixed(2)))
+                    }
+                    aria-label="Zoom in artifact"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="split-stage-viewport">
+                <img
+                  src={activeChapter.image}
+                  alt={activeChapter.title}
+                  loading="lazy"
+                  style={{
+                    objectPosition: activeChapter.focalPoint,
+                    transform: `scale(${(
+                      activeChapter.zoomScale * artifactZoom
+                    ).toFixed(2)})`
+                  }}
+                  className="split-stage-image"
+                />
+                <div className="split-stage-callout glass-noir">
+                  <span className="mono-eyebrow">STAGE VIEWPORT NOTE</span>
+                  <strong>{activeChapter.detailCallout}</strong>
+                </div>
+              </div>
+
+              <dl className="split-stage-specs">
+                <div>
+                  <dt>DOCUMENTED MEDIUM</dt>
+                  <dd>{activeChapter.material}</dd>
+                </div>
+                <div>
+                  <dt>CONTEXT &amp; CITATION</dt>
+                  <dd>{activeChapter.provenanceContext}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* RIGHT: Scrolling Glass Provenance Timeline */}
+            <div className="split-timeline-column">
+              <div className="split-timeline-spine">
+                {HERITAGE_TIMELINE_CHAPTERS.map((chapter) => {
+                  const isActive = chapter.id === activeChapter.id;
+                  return (
+                    <article
+                      key={chapter.id}
+                      tabIndex={0}
+                      aria-current={isActive ? "step" : undefined}
+                      onClick={() => setActiveChapterId(chapter.id)}
+                      onMouseEnter={() => setActiveChapterId(chapter.id)}
+                      onFocus={() => setActiveChapterId(chapter.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setActiveChapterId(chapter.id);
+                        }
+                      }}
+                      className={
+                        isActive
+                          ? "timeline-glass-card glass-surface active"
+                          : "timeline-glass-card glass-surface"
+                      }
+                    >
+                      <span
+                        className={
+                          isActive
+                            ? "timeline-node active"
+                            : "timeline-node"
+                        }
+                        aria-hidden="true"
+                      />
+
+                      <div className="timeline-card-meta">
+                        <span className="mono-eyebrow">{chapter.era}</span>
+                        {isActive && (
+                          <span className="timeline-active-badge">
+                            ACTIVE LENS
+                          </span>
+                        )}
+                      </div>
+
+                      <h3
+                        id={
+                          chapter.id === HERITAGE_TIMELINE_CHAPTERS[0].id
+                            ? "split-viewer-heading"
+                            : undefined
+                        }
+                        className="heading timeline-card-title"
+                      >
+                        {chapter.title}
+                      </h3>
+
+                      <p className="timeline-card-summary">
+                        {chapter.summary}
+                      </p>
+
+                      <div className="timeline-card-footer">
+                        <span>{chapter.material}</span>
+                        <Link
+                          to={chapter.storyLink}
+                          className="text-link"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Read Archive →
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
       {/* EXPLORE CULTURES */}
       <section className="container section">
         <SectionHeading
@@ -913,6 +1417,7 @@ export function Category({
                 )
               }
               placeholder={`Search ${title.toLowerCase()}...`}
+              aria-label={`Search ${title}`}
             />
           </div>
 
@@ -1785,18 +2290,20 @@ export function Post() {
         <div className="container article-layout">
           <main className="article-main">
             <div className="article-body">
-              {String(post.body || "")
-                .split("\n\n")
-                .map(
-                  (
-                    paragraph,
-                    index
-                  ) => (
-                    <p key={index}>
-                      {paragraph}
-                    </p>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  a: ({ node, ...props }) => (
+                    <a
+                      {...props}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
                   )
-                )}
+                }}
+              >
+                {String(post.body || "")}
+              </ReactMarkdown>
             </div>
 
             {post.youtubeUrl && (
@@ -2142,6 +2649,7 @@ export function SearchPage() {
                 )
               }
               placeholder="Search history, culture, language, festival, food, people or places..."
+              aria-label="Search history, culture, language, festival, food, people or places"
               autoFocus
             />
           </div>
@@ -2481,6 +2989,7 @@ export function Visit() {
                 )
               }
               placeholder="Search place, state or ethnic group..."
+              aria-label="Search place, state or ethnic group"
             />
           </div>
 
@@ -2491,6 +3000,7 @@ export function Visit() {
                 event.target.value
               )
             }
+            aria-label="Filter destinations by state"
           >
             {states.map((item) => (
               <option
@@ -2511,6 +3021,7 @@ export function Visit() {
                 event.target.value
               )
             }
+            aria-label="Filter destinations by type"
           >
             {types.map((item) => (
               <option
@@ -2893,14 +3404,11 @@ export function About() {
       </section>
 
       <section className="container section prose">
-        <div>
-          {String(settings.aboutBody || "")
-            .split("\n\n")
-            .filter(Boolean)
-            .map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
-        </div>
+        <div className="about-markdown">
+  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+    {String(settings.aboutBody || "")}
+  </ReactMarkdown>
+</div>
 
         <div className="mission-grid">
           <div className="card card-body">
@@ -2997,6 +3505,9 @@ export function About() {
 ---------------------------------- */
 
 export function Privacy() {
+  const { openPreferencesManager } =
+    useConsent();
+
   return (
     <>
       <section className="page-hero">
@@ -3010,9 +3521,10 @@ export function Privacy() {
           </h1>
 
           <p>
-            How Moji's Heritage handles
+            How Moji&apos;s Heritage handles
             information submitted through
-            public website features.
+            public website features, browser
+            storage and connected services.
           </p>
         </div>
       </section>
@@ -3023,12 +3535,12 @@ export function Privacy() {
         </h2>
 
         <p>
-          Moji's Heritage is designed for
+          Moji&apos;s Heritage is designed for
           public learning. Visitors do not
           need to create an account to
           read stories, explore cultural
           places, search the website or
-          use most public features.
+          use public features.
         </p>
 
         <h2 className="heading">
@@ -3036,13 +3548,18 @@ export function Privacy() {
         </h2>
 
         <p>
-          When you submit a comment, we
-          receive the display name and
-          comment text you provide.
-          Comments are moderated before
-          publication. Please do not
-          include sensitive personal
-          information.
+          When you submit a comment on a story,
+          we receive the display name (up to 60
+          characters) and comment text (up to
+          1,000 characters) you provide, along
+          with the story identifier and submission
+          timestamp. Comments are stored in
+          Google Firebase Firestore with{" "}
+          <code>isApproved: false</code> and are
+          reviewed by an administrator before
+          public display. Please do not include
+          sensitive personal information in
+          public comments.
         </p>
 
         <h2 className="heading">
@@ -3050,37 +3567,111 @@ export function Privacy() {
         </h2>
 
         <p>
-          When you contact us, your name,
-          email address, reason for
-          contact, subject and message
-          are used to respond to your
-          enquiry. Contact messages are
-          not displayed publicly.
+          When you submit the Contact Us form,
+          your name, email address, reason for
+          contact, subject and message are
+          transmitted via the Web3Forms delivery
+          service (<code>api.web3forms.com</code>)
+          so the Moji&apos;s Heritage team can
+          read and respond to your enquiry.
+          Contact messages are not displayed
+          publicly on the website.
         </p>
 
         <h2 className="heading">
-          Saved Stories
+          Browser Storage &amp; Preferences
         </h2>
 
         <p>
-          The Save for Later and Recently
-          Viewed features use local
-          browser storage. This
-          information remains on your
-          device and does not require a
-          visitor account.
+          Moji&apos;s Heritage uses browser{" "}
+          <code>localStorage</code> on your
+          device rather than advertising or
+          cross-site tracking cookies:
+        </p>
+
+        <ul>
+          <li>
+            <strong>
+              Consent Preferences (<code>{CONSENT_STORAGE_KEY}</code>):
+            </strong>{" "}
+            Strictly necessary storage that records
+            whether you accepted or rejected optional
+            storage categories, along with the policy
+            version and timestamp.
+          </li>
+          <li>
+            <strong>
+              Theme Selection (<code>{THEME_STORAGE_KEY}</code>):
+            </strong>{" "}
+            Remembers whether you selected the{" "}
+            <em>Archives</em> (light) or{" "}
+            <em>Gallery Noir</em> (dark) visual theme.
+          </li>
+          <li>
+            <strong>
+              Saved Stories (<code>{SAVED_POSTS_KEY}</code>):
+            </strong>{" "}
+            Stores story IDs when you explicitly click
+            the Save / Bookmark button on an article.
+            You can clear this list at any time on the{" "}
+            <Link to="/saved" className="text-link">
+              Saved Stories
+            </Link>{" "}
+            page.
+          </li>
+          <li>
+            <strong>
+              Recently Viewed Stories (<code>{RECENTLY_VIEWED_KEY}</code>):
+            </strong>{" "}
+            Optional preference storage that remembers
+            up to 6 recently opened stories in your
+            browser. This feature is disabled by
+            default until you enable{" "}
+            <em>Preferences &amp; Reading History</em>{" "}
+            in our storage controls, and is erased
+            immediately if you withdraw consent.
+          </li>
+        </ul>
+
+        <p>
+          For full technical details, see our{" "}
+          <Link to="/cookies" className="text-link">
+            Cookie &amp; Storage Policy
+          </Link>
+          .
         </p>
 
         <h2 className="heading">
-          Security & Abuse Prevention
+          Firebase &amp; Measurement Services
         </h2>
 
         <p>
-          We may use Firebase security
-          services and technical request
-          information to protect the
-          website against spam, automated
-          abuse and unauthorised access.
+          The website uses Google Firebase
+          services (Firebase Hosting, Cloud
+          Firestore, Firebase Authentication for
+          authorised administrators, and Firebase
+          Storage where configured). If you enable
+          optional{" "}
+          <em>Analytics &amp; Story View Measurement</em>
+          , opening an article increments an
+          aggregate view counter on that story
+          document in Firestore. We do not use
+          third-party advertising networks or
+          behavioral profiling scripts.
+        </p>
+
+        <h2 className="heading">
+          Security &amp; Abuse Prevention
+        </h2>
+
+        <p>
+          Where configured, Firebase App Check
+          (using reCAPTCHA Enterprise) and
+          standard hosting security logs may
+          process technical request metadata to
+          protect the website against spam,
+          automated abuse and unauthorised
+          access.
         </p>
 
         <h2 className="heading">
@@ -3088,21 +3679,224 @@ export function Privacy() {
         </h2>
 
         <p>
-          Links to YouTube, social
-          networks and OpenStreetMap lead
-          to third-party services governed
-          by their own terms and privacy
+          Links to YouTube, social sharing links
+          (WhatsApp, Facebook, X) and interactive
+          map tiles from OpenStreetMap (loaded
+          when you switch to Map View on the Visit
+          page) connect to third-party services
+          governed by their own terms and privacy
           policies.
         </p>
 
         <h2 className="heading">
-          Questions
+          Managing Your Choices &amp; Questions
         </h2>
 
         <p>
-          Use the Contact Us page if you
-          have a privacy question or
-          request.
+          You can review, change or withdraw your
+          optional storage and measurement
+          preferences at any time using the button
+          below or the persistent link in the
+          website footer. For privacy questions or
+          requests regarding submitted comments or
+          messages, please use our{" "}
+          <Link to="/contact" className="text-link">
+            Contact Us
+          </Link>{" "}
+          page.
+        </p>
+
+        <div className="hero-actions">
+          <button
+            type="button"
+            className="btn primary"
+            onClick={openPreferencesManager}
+          >
+            Manage Cookie &amp; Storage Preferences
+          </button>
+
+          <Link to="/cookies" className="btn outline">
+            Read Cookie &amp; Storage Policy
+          </Link>
+
+          <Link to="/contact" className="btn outline">
+            Contact Us
+          </Link>
+        </div>
+      </section>
+    </>
+  );
+}
+
+/* ----------------------------------
+   COOKIE & STORAGE POLICY
+---------------------------------- */
+
+export function CookiePolicy() {
+  const {
+    choices,
+    hasDecided,
+    updatedAt,
+    openPreferencesManager,
+    rejectOptional
+  } = useConsent();
+
+  return (
+    <>
+      <section className="page-hero">
+        <div className="container">
+          <span className="eyebrow">
+            Transparency &amp; Controls
+          </span>
+
+          <h1 className="heading">
+            Cookie &amp; Browser Storage Policy
+          </h1>
+
+          <p>
+            Plain-language documentation of how
+            Moji&apos;s Heritage uses browser local
+            storage, security tokens and optional
+            measurement features.
+          </p>
+        </div>
+      </section>
+
+      <section className="container section prose">
+        <h2 className="heading">
+          How We Use Browser Storage
+        </h2>
+
+        <p>
+          Moji&apos;s Heritage primarily uses your
+          browser&apos;s <code>localStorage</code>{" "}
+          mechanism to store settings on your own
+          device. Unlike tracking cookies sent to
+          advertising servers on every request,{" "}
+          <code>localStorage</code> items remain in
+          your browser unless you clear them or
+          change your preferences.
+        </p>
+
+        <div className="card card-body" style={{ marginBlock: "1.5rem" }}>
+          <span className="mono-eyebrow">CURRENT BROWSER STATUS</span>
+          <h3 className="heading" style={{ marginTop: "0.35rem" }}>
+            Your Active Preference State
+          </h3>
+          <p className="muted" style={{ marginBottom: "0.75rem" }}>
+            Status:{" "}
+            <strong>
+              {hasDecided
+                ? "Preferences saved"
+                : "No optional categories enabled (default)"}
+            </strong>
+            {updatedAt && (
+              <> · Updated {new Date(updatedAt).toLocaleString()}</>
+            )}
+          </p>
+          <ul>
+            <li>
+              Strictly Necessary Storage: <strong>Active</strong>
+            </li>
+            <li>
+              Preferences &amp; Reading History:{" "}
+              <strong>{choices.preferences ? "Enabled" : "Disabled"}</strong>
+            </li>
+            <li>
+              Analytics &amp; Story View Measurement:{" "}
+              <strong>{choices.analytics ? "Enabled" : "Disabled"}</strong>
+            </li>
+            <li>
+              Marketing &amp; Advertising:{" "}
+              <strong>{choices.marketing ? "Enabled" : "Disabled (Not Used)"}</strong>
+            </li>
+          </ul>
+          <div className="hero-actions">
+            <button
+              type="button"
+              className="btn primary"
+              onClick={openPreferencesManager}
+            >
+              Open Preferences Editor
+            </button>
+            {hasDecided && (choices.preferences || choices.analytics || choices.marketing) && (
+              <button
+                type="button"
+                className="btn outline"
+                onClick={rejectOptional}
+              >
+                Withdraw Optional Consent
+              </button>
+            )}
+          </div>
+        </div>
+
+        <h2 className="heading">
+          Storage Inventory
+        </h2>
+
+        <ul>
+          <li>
+            <strong>
+              <code>{CONSENT_STORAGE_KEY}</code> (Strictly Necessary):
+            </strong>{" "}
+            Stores your consent choices, policy version
+            and timestamp in <code>localStorage</code> so
+            the consent banner does not reappear on every
+            page view.
+          </li>
+          <li>
+            <strong>
+              <code>{THEME_STORAGE_KEY}</code> (Strictly Necessary / User-Requested):
+            </strong>{" "}
+            Stores your chosen visual mode (
+            <code>archives</code> or <code>noir</code>)
+            when you use the theme toggle in the
+            navigation bar.
+          </li>
+          <li>
+            <strong>
+              <code>{SAVED_POSTS_KEY}</code> (Strictly Necessary / User-Requested):
+            </strong>{" "}
+            Stores an array of article IDs when you click
+            the bookmark button to save a story for later
+            reading.
+          </li>
+          <li>
+            <strong>
+              <code>{RECENTLY_VIEWED_KEY}</code> (Optional — Preferences):
+            </strong>{" "}
+            Stores up to 6 recently viewed story summaries
+            on your device. Disabled by default until you
+            grant <em>Preferences &amp; Reading History</em>{" "}
+            consent.
+          </li>
+          <li>
+            <strong>
+              Firebase Auth &amp; App Check Storage (Strictly Necessary where used):
+            </strong>{" "}
+            Used only when an authorised administrator
+            signs in to <code>/admin</code> or when
+            Firebase App Check is configured to protect
+            public forms against automated abuse.
+          </li>
+        </ul>
+
+        <h2 className="heading">
+          Questions or Concerns
+        </h2>
+
+        <p>
+          If you have any questions about our{" "}
+          <Link to="/privacy" className="text-link">
+            Privacy Policy
+          </Link>{" "}
+          or this Cookie &amp; Browser Storage
+          Policy, please reach out through our{" "}
+          <Link to="/contact" className="text-link">
+            Contact Us
+          </Link>{" "}
+          page.
         </p>
       </section>
     </>

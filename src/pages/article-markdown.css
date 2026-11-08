@@ -1,0 +1,139 @@
+/* Moji's Heritage: public article Markdown typography. */
+.article-body {
+    line-height: 1.85;
+    overflow-wrap: anywhere;
+}
+
+.article-body> :first-child {
+    margin-top: 0;
+}
+
+.article-body h1,
+.article-body h2,
+.article-body h3,
+.article-body h4,
+.article-body h5,
+.article-body h6 {
+    line-height: 1.35;
+    font-weight: 750;
+    margin: 2rem 0 0.8rem;
+    overflow-wrap: anywhere;
+}
+
+.article-body h1 {
+    font-size: clamp(1.65rem, 3vw, 2.15rem);
+}
+
+.article-body h2 {
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+}
+
+.article-body h3 {
+    font-size: clamp(1.15rem, 2vw, 1.4rem);
+}
+
+.article-body h4,
+.article-body h5,
+.article-body h6 {
+    font-size: 1.08rem;
+}
+
+.article-body p {
+    margin: 0 0 1.25rem;
+}
+
+.article-body strong {
+    font-weight: 750;
+}
+
+.article-body em {
+    font-style: italic;
+}
+
+.article-body ul,
+.article-body ol {
+    padding-left: 1.65rem;
+    margin: 0.5rem 0 1.5rem;
+}
+
+.article-body li {
+    margin-bottom: 0.45rem;
+}
+
+.article-body li>p {
+    margin-bottom: 0.35rem;
+}
+
+.article-body a {
+    color: var(--green, #176c53);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.article-body a:hover {
+    text-decoration-thickness: 2px;
+}
+
+.article-body blockquote {
+    margin: 1.5rem 0;
+    padding: 0.6rem 1.2rem;
+    border-left: 4px solid var(--green, #176c53);
+    background: rgba(23, 108, 83, .08);
+}
+
+.article-body blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+.article-body hr {
+    margin: 2rem 0;
+    border: 0;
+    border-top: 1px solid currentColor;
+    opacity: .2;
+}
+
+.article-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+}
+
+.article-body table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+}
+
+.article-body th,
+.article-body td {
+    padding: 0.65rem;
+    border: 1px solid #d6ddd8;
+    text-align: left;
+}
+
+.article-body code {
+    overflow-wrap: anywhere;
+}
+
+.article-body pre {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 1rem;
+}
+
+@media (max-width: 600px) {
+    .article-body {
+        line-height: 1.75;
+    }
+
+    .article-body h2 {
+        margin-top: 1.6rem;
+    }
+
+    .article-body ul,
+    .article-body ol {
+        padding-left: 1.35rem;
+    }
+}

@@ -7,20 +7,23 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "node --test tests/consent-and-theme.test.mjs",
     "set-admin": "node scripts/set-admin.cjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-router-dom": "^6.30.1",
     "firebase": "latest",
     "i18next": "latest",
-    "react-i18next": "latest",
     "leaflet": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-i18next": "latest",
     "react-leaflet": "latest",
-    "lucide-react": "latest"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^6.30.1",
+    "remark-gfm": "^4.0.1",
+    "vite": "latest"
   },
   "devDependencies": {
     "firebase-admin": "latest"

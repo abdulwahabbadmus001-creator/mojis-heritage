@@ -1,9 +1,15 @@
+import { hasConsentFor } from "../utils/consentStorage.js";
+
 const STORAGE_KEY =
   "mojisHeritageRecentlyViewed";
 
 const MAX_ITEMS = 6;
 
 function readItems() {
+  if (!hasConsentFor("preferences")) {
+    return [];
+  }
+
   try {
     const stored =
       localStorage.getItem(STORAGE_KEY);
@@ -23,7 +29,7 @@ function readItems() {
 }
 
 export function addRecentlyViewed(post) {
-  if (!post?.id) {
+  if (!post?.id || !hasConsentFor("preferences")) {
     return;
   }
 
@@ -50,10 +56,14 @@ export function addRecentlyViewed(post) {
     ...withoutCurrent
   ].slice(0, MAX_ITEMS);
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(next)
-  );
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(next)
+    );
+  } catch {
+    // Ignore storage quota or security restrictions
+  }
 }
 
 export function getRecentlyViewed() {
@@ -61,5 +71,9 @@ export function getRecentlyViewed() {
 }
 
 export function clearRecentlyViewed() {
-  localStorage.removeItem(STORAGE_KEY);
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignore storage restrictions
+  }
 }

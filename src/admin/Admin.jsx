@@ -1569,7 +1569,11 @@ export function SiteSettings() {
           />
         </div>
         <div className="field">
-          <label>About Us</label>
+          <label>About Us</label><p className="field-hint">
+  Markdown supported: use ## for headings, **text** for bold,
+  *text* for italics, and - for bullet points. Separate paragraphs
+  with a blank line.
+</p>
           <textarea
             required
             rows="10"

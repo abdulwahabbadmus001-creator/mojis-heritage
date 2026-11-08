@@ -32,10 +32,14 @@ export function useSavedPosts() {
   );
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(saved)
-    );
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(saved)
+      );
+    } catch {
+      // Ignore storage quota or security restrictions
+    }
   }, [saved]);
 
   const isSaved = useCallback(

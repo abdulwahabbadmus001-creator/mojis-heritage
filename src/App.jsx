@@ -9,6 +9,7 @@ import {
 import { useEffect } from "react";
 
 import { AuthProvider } from "./context/Auth";
+import { ConsentProvider } from "./context/Consent";
 import { Navbar, Footer } from "./components/Site";
 
 import {
@@ -21,6 +22,7 @@ import {
   VisitDetail,
   About,
   Privacy,
+  CookiePolicy,
   Contact,
   Cultures,
   CultureDetail,
@@ -93,9 +95,10 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <ScrollToTop />
+        <ConsentProvider>
+          <ScrollToTop />
 
-        <Routes>
+          <Routes>
           {/* =========================
               PUBLIC WEBSITE
           ========================== */}
@@ -257,6 +260,11 @@ export default function App() {
             />
 
             <Route
+              path="/cookies"
+              element={<CookiePolicy />}
+            />
+
+            <Route
               path="/contact"
               element={<Contact />}
             />
@@ -313,7 +321,8 @@ export default function App() {
               element={<Analytics />}
             />
           </Route>
-        </Routes>
+          </Routes>
+        </ConsentProvider>
       </BrowserRouter>
     </AuthProvider>
   );
