@@ -663,6 +663,33 @@ test("11. Admin dashboard layout and scroll-reset eliminate section-click scroll
   assert.match(indexCss, /\.sidebar a\.admin-nav-link\.active/);
 });
 
+test("Admin document scrolling is not captured by global horizontal overflow containers", () => {
+  const indexCss = fs.readFileSync(
+    path.join(process.cwd(), "src", "index.css"),
+    "utf8"
+  );
+  const htmlRule = indexCss.match(/(^|\n)html\s*\{([^}]*)\}/)?.[2] || "";
+  const bodyRule = indexCss.match(/(^|\n)body\s*\{([^}]*)\}/)?.[2] || "";
+
+  assert.match(htmlRule, /overflow-x:\s*clip/);
+  assert.match(bodyRule, /overflow-x:\s*clip/);
+  assert.doesNotMatch(
+    `${htmlRule}\n${bodyRule}`,
+    /overflow(?:-[xy])?:\s*hidden/
+  );
+
+  const mobileAdminRule =
+    indexCss.match(
+      /Full-width Admin Newsroom[\s\S]*?\.admin-shell\s*\{([^}]*)\}/
+    )?.[1] || "";
+  assert.match(mobileAdminRule, /align-items:\s*stretch/);
+  assert.match(mobileAdminRule, /min-height:\s*100vh/);
+  assert.match(mobileAdminRule, /min-height:\s*100dvh/);
+  assert.doesNotMatch(mobileAdminRule, /(?:^|[;\s])height:\s*100(?:vh|dvh)/);
+  assert.match(indexCss, /\.sidebar\s*\{[^}]*min-width:\s*0/);
+  assert.match(indexCss, /\.admin-sidebar-nav\s*\{[^}]*min-width:\s*0/);
+});
+
 test("12. URL scheme sanitization, contribution rate limiting, HTTP security headers, and build hardening", async () => {
   // 1. URL scheme sanitization blocks XSS / dangerous schemes
   assert.equal(isSafeHttpUrl("https://www.metmuseum.org/art/collection/search/316524"), true);
@@ -773,8 +800,8 @@ test("13. Universal multi-device responsiveness for public site and admin newsro
   // 1. Viewport meta tag supports notched iPhones, curved screens, and foldables
   assert.match(indexHtml, /viewport-fit=cover/);
 
-  // 2. Global horizontal overflow protection and responsive .filters / .cards grids
-  assert.match(indexCss, /overflow-x:\s*hidden/);
+  // 2. Global horizontal clipping and responsive .filters / .cards grids
+  assert.match(indexCss, /overflow-x:\s*clip/);
   assert.match(
     indexCss,
     /\.filters\s*\{[\s\S]*?grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(min\(100%,\s*220px\),\s*1fr\)\)/
@@ -790,4 +817,3 @@ test("13. Universal multi-device responsiveness for public site and admin newsro
   assert.match(indexCss, /@media\s*\(min-width:\s*1440px\)/); // Large desktop monitors
   assert.match(indexCss, /font-size:\s*16px\s*!important/); // Prevents iOS Safari auto-zoom on form input focus
 });
-

@@ -86,7 +86,7 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -97,7 +97,7 @@ body {
   background: var(--cream);
   color: var(--text);
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -1973,98 +1973,6 @@ textarea:focus-visible {
   .gallery-grid {
     columns: 2;
   }
-
-  .admin-shell {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-
-  .sidebar {
-    position: sticky;
-    top: 0;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-    padding: 0.75rem 1rem;
-    gap: 0.5rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-  }
-
-  .sidebar-brand {
-    align-items: center;
-  }
-
-  .sidebar-brand h2 {
-    font-size: 1.1rem;
-  }
-
-  .sidebar-user-email {
-    font-size: 0.74rem;
-    margin-top: 0.1rem;
-  }
-
-  .sidebar-mobile-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  .sidebar .sidebar-public-link {
-    display: inline-flex;
-    padding: 0.35rem 0.6rem;
-    font-size: 0.78rem;
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 999px;
-    margin: 0;
-  }
-
-  .sidebar .sidebar-logout-btn {
-    padding: 0.35rem 0.7rem;
-    font-size: 0.78rem;
-    min-height: auto;
-  }
-
-  .admin-sidebar-nav {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    white-space: nowrap;
-    gap: 0.4rem;
-    padding-bottom: 0.2rem;
-    scrollbar-width: thin;
-  }
-
-  .sidebar .admin-sidebar-nav a {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.42rem 0.75rem;
-    margin: 0;
-    font-size: 0.82rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    flex-shrink: 0;
-  }
-
-  .sidebar .admin-sidebar-nav a.admin-nav-link.active {
-    background: #d4a853;
-    color: #141915;
-    border-left: none;
-  }
-
-  .sidebar-footer {
-    display: none;
-  }
-
-  .admin-main {
-    padding: 1.25rem 1rem 2.5rem;
-    min-height: auto;
-  }
-
-  .table {
-    font-size: 0.82rem;
-  }
 }
 
 @media (max-width: 600px) {
@@ -3616,12 +3524,15 @@ textarea:focus-visible {
   .admin-shell {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .sidebar {
     position: sticky;
     top: 0;
+    min-width: 0;
     height: auto;
     max-height: none;
     overflow: visible;
@@ -3669,6 +3580,7 @@ textarea:focus-visible {
   .admin-sidebar-nav {
     display: flex;
     flex-direction: row;
+    min-width: 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     white-space: nowrap;
@@ -3699,7 +3611,10 @@ textarea:focus-visible {
   }
 
   .admin-main {
-    padding: 1.35rem max(1rem, env(safe-area-inset-left, 1rem)) 2.75rem;
+    padding:
+      1.35rem
+      max(1rem, env(safe-area-inset-left, 1rem))
+      calc(2.75rem + env(safe-area-inset-bottom, 0px));
     min-height: auto;
   }
 
@@ -3997,7 +3912,7 @@ textarea:focus-visible {
   }
 
   .admin-main {
-    padding: 1rem 0.75rem 2.25rem;
+    padding: 1rem 0.75rem calc(2.25rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -4015,7 +3930,3 @@ textarea:focus-visible {
     padding: 2.25rem 2.75rem 3.5rem;
   }
 }
-
-
-
-
