@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0",
   "projectId": "mojis-heritage-ae06c",
-  "lastScheduledSyncAt": "2026-11-11T11:32:06.633Z",
+  "lastScheduledSyncAt": "2026-11-12T11:57:35.512Z",
   "totalRecords": 25,
   "publishedCount": 19,
   "pendingReviewCount": 6,
   "providerStatuses": {
     "met_museum": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-11T11:32:08.158Z",
+      "lastSyncAt": "2026-11-12T11:57:37.056Z",
       "fetchedCount": 6,
       "publishedCount": 6,
       "pendingReviewCount": 0,
@@ -16,7 +16,7 @@
     },
     "wikipedia_nigeria": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-11T11:32:08.414Z",
+      "lastSyncAt": "2026-11-12T11:57:37.362Z",
       "fetchedCount": 10,
       "publishedCount": 10,
       "pendingReviewCount": 0,
@@ -24,7 +24,7 @@
     },
     "wikimedia_commons": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-11T11:32:09.032Z",
+      "lastSyncAt": "2026-11-12T11:57:38.200Z",
       "fetchedCount": 5,
       "publishedCount": 0,
       "pendingReviewCount": 5,
@@ -67,7 +67,7 @@
         "ijebu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:07.303Z",
+      "retrievedAt": "2026-11-12T11:57:36.056Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -107,7 +107,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:07.400Z",
+      "retrievedAt": "2026-11-12T11:57:36.212Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -147,7 +147,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:07.494Z",
+      "retrievedAt": "2026-11-12T11:57:36.574Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -187,7 +187,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:07.705Z",
+      "retrievedAt": "2026-11-12T11:57:36.724Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -227,7 +227,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.059Z",
+      "retrievedAt": "2026-11-12T11:57:36.871Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -267,7 +267,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.158Z",
+      "retrievedAt": "2026-11-12T11:57:37.056Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -307,7 +307,7 @@
         "ife"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.412Z",
+      "retrievedAt": "2026-11-12T11:57:37.359Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -351,7 +351,7 @@
         "nok culture"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.412Z",
+      "retrievedAt": "2026-11-12T11:57:37.360Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -393,7 +393,7 @@
         "ikenga"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.413Z",
+      "retrievedAt": "2026-11-12T11:57:37.360Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -433,7 +433,7 @@
         "sukur"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.413Z",
+      "retrievedAt": "2026-11-12T11:57:37.360Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -473,7 +473,7 @@
         "osun-osogbo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.413Z",
+      "retrievedAt": "2026-11-12T11:57:37.361Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -514,7 +514,7 @@
         "igala"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.413Z",
+      "retrievedAt": "2026-11-12T11:57:37.361Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -553,7 +553,7 @@
         "efik"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.414Z",
+      "retrievedAt": "2026-11-12T11:57:37.361Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -593,7 +593,7 @@
         "kanuri"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.414Z",
+      "retrievedAt": "2026-11-12T11:57:37.362Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -634,7 +634,7 @@
         "akwete"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.414Z",
+      "retrievedAt": "2026-11-12T11:57:37.362Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -673,7 +673,7 @@
         "benin city"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:08.414Z",
+      "retrievedAt": "2026-11-12T11:57:37.362Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -715,7 +715,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:09.031Z",
+      "retrievedAt": "2026-11-12T11:57:38.200Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -755,7 +755,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:09.031Z",
+      "retrievedAt": "2026-11-12T11:57:38.200Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -796,7 +796,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:09.031Z",
+      "retrievedAt": "2026-11-12T11:57:38.200Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -838,7 +838,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:09.031Z",
+      "retrievedAt": "2026-11-12T11:57:38.200Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -876,7 +876,7 @@
         "edo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-11T11:32:09.032Z",
+      "retrievedAt": "2026-11-12T11:57:38.200Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
