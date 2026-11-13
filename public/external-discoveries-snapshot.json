@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0",
   "projectId": "mojis-heritage-ae06c",
-  "lastScheduledSyncAt": "2026-11-12T11:57:35.512Z",
+  "lastScheduledSyncAt": "2026-11-13T11:40:36.344Z",
   "totalRecords": 25,
   "publishedCount": 19,
   "pendingReviewCount": 6,
   "providerStatuses": {
     "met_museum": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-12T11:57:37.056Z",
+      "lastSyncAt": "2026-11-13T11:40:37.912Z",
       "fetchedCount": 6,
       "publishedCount": 6,
       "pendingReviewCount": 0,
@@ -16,7 +16,7 @@
     },
     "wikipedia_nigeria": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-12T11:57:37.362Z",
+      "lastSyncAt": "2026-11-13T11:40:38.652Z",
       "fetchedCount": 10,
       "publishedCount": 10,
       "pendingReviewCount": 0,
@@ -24,7 +24,7 @@
     },
     "wikimedia_commons": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-12T11:57:38.200Z",
+      "lastSyncAt": "2026-11-13T11:40:39.041Z",
       "fetchedCount": 5,
       "publishedCount": 0,
       "pendingReviewCount": 5,
@@ -67,7 +67,7 @@
         "ijebu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:36.056Z",
+      "retrievedAt": "2026-11-13T11:40:36.741Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -107,7 +107,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:36.212Z",
+      "retrievedAt": "2026-11-13T11:40:36.848Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -147,7 +147,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:36.574Z",
+      "retrievedAt": "2026-11-13T11:40:37.055Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -187,7 +187,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:36.724Z",
+      "retrievedAt": "2026-11-13T11:40:37.249Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -227,7 +227,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:36.871Z",
+      "retrievedAt": "2026-11-13T11:40:37.618Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -267,7 +267,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.056Z",
+      "retrievedAt": "2026-11-13T11:40:37.912Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -307,7 +307,7 @@
         "ife"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.359Z",
+      "retrievedAt": "2026-11-13T11:40:38.649Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -351,7 +351,7 @@
         "nok culture"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.360Z",
+      "retrievedAt": "2026-11-13T11:40:38.650Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -393,7 +393,7 @@
         "ikenga"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.360Z",
+      "retrievedAt": "2026-11-13T11:40:38.650Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -433,7 +433,7 @@
         "sukur"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.360Z",
+      "retrievedAt": "2026-11-13T11:40:38.650Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -473,7 +473,7 @@
         "osun-osogbo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.361Z",
+      "retrievedAt": "2026-11-13T11:40:38.650Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -486,7 +486,7 @@
       "providerName": "Wikipedia Heritage Archive",
       "title": "Kingdom of Nri",
       "summary": "The Kingdom of Nri (Igbo: Ọ̀ràézè Ǹrì ) was a medieval polity located in what is now Nigeria. The kingdom existed as a sphere of religious and political influence over a significant part of what is known today as  Igboland prior to  expansion, and was administered by a priest-kin",
-      "body": "The Kingdom of Nri (Igbo: Ọ̀ràézè Ǹrì ) was a medieval polity located in what is now Nigeria. The kingdom existed as a sphere of religious and political influence over a significant part of what is known today as  Igboland prior to  expansion, and was administered by a priest-king called an Eze Nri. The Eze Nri managed trade and diplomacy on behalf of the Nri people, a subgroup of the Igbo-speaking people, and possessed divine authority in religious matters.\nThe kingdom was a haven for all those who had been rejected in their communities and also a place where slaves were set free from their bondage. Nri expanded through converts gaining neighboring communities' allegiance, not by force.\nNri's royal founder, Eri, is said to be a 'sky being' that came down to earth and then established civilization. One of the better-known remnants of the Nri civilization is manifested in the Igbo ukwu artifacts.\nNri's culture permanently influenced the Northern and Western Igbo, especially through religion and taboos.\nThe kingdom appears to have passed its peak in the 18th century, encroached upon by the rise of the Benin and Igala kingdom, and later the Atlantic slave trade, but it appears to have maintained its authority well into the 16th century, remnants of the eze hierarchy persisted until the establishment of Colonial Nigeria in 1911, and it continues to exist as one of the traditional states within modern Nigeria.",
+      "body": "The Kingdom of Nri (Igbo: Ọ̀ràézè Ǹrì ) was a medieval polity located in what is now Nigeria. The kingdom existed as a sphere of religious and political influence over a significant part of what is known today as  Igboland prior to  expansion, and was administered by a priest-king called an Eze Nri. The Eze Nri managed trade and diplomacy on behalf of the Nri people, a subgroup of the Igbo-speaking people, and possessed divine authority in religious matters. The kingdom is the oldest kingdom in Nigeria.\nThe kingdom was a haven for all those who had been rejected in their communities and also a place where slaves were set free from their bondage. Nri expanded through converts gaining neighboring communities' allegiance, not by force.\nNri's royal founder, Eri, is said to be a 'sky being' that came down to earth and then established civilization. One of the better-known remnants of the Nri civilization is manifested in the Igbo ukwu artifacts.\nNri's culture permanently influenced the Northern and Western Igbo, especially through religion and taboos.\nThe kingdom appears to have passed its peak in the 18th century, encroached upon by the rise of the Benin and Igala kingdom, and later the Atlantic slave trade, but it appears to have maintained its authority well into the 16th century, remnants of the eze hierarchy persisted until the establishment of Colonial Nigeria in 1911, and it continues to exist as one of the traditional states within modern Nigeria.",
       "ethnicGroup": "Igbo",
       "state": "Anambra",
       "region": "South East",
@@ -514,7 +514,7 @@
         "igala"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.361Z",
+      "retrievedAt": "2026-11-13T11:40:38.651Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -553,7 +553,7 @@
         "efik"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.361Z",
+      "retrievedAt": "2026-11-13T11:40:38.651Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -593,7 +593,7 @@
         "kanuri"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.362Z",
+      "retrievedAt": "2026-11-13T11:40:38.651Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -634,7 +634,7 @@
         "akwete"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.362Z",
+      "retrievedAt": "2026-11-13T11:40:38.652Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -673,7 +673,7 @@
         "benin city"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:37.362Z",
+      "retrievedAt": "2026-11-13T11:40:38.652Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -715,7 +715,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:38.200Z",
+      "retrievedAt": "2026-11-13T11:40:39.041Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -755,7 +755,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:38.200Z",
+      "retrievedAt": "2026-11-13T11:40:39.041Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -796,7 +796,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:38.200Z",
+      "retrievedAt": "2026-11-13T11:40:39.041Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -838,7 +838,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:38.200Z",
+      "retrievedAt": "2026-11-13T11:40:39.041Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -876,7 +876,7 @@
         "edo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-12T11:57:38.200Z",
+      "retrievedAt": "2026-11-13T11:40:39.041Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
