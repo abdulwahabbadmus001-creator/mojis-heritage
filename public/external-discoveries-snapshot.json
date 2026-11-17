@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0",
   "projectId": "mojis-heritage-ae06c",
-  "lastScheduledSyncAt": "2026-11-16T12:10:47.088Z",
+  "lastScheduledSyncAt": "2026-11-17T12:35:17.992Z",
   "totalRecords": 25,
   "publishedCount": 19,
   "pendingReviewCount": 6,
   "providerStatuses": {
     "met_museum": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-16T12:10:47.753Z",
+      "lastSyncAt": "2026-11-17T12:35:18.808Z",
       "fetchedCount": 6,
       "publishedCount": 6,
       "pendingReviewCount": 0,
@@ -16,7 +16,7 @@
     },
     "wikipedia_nigeria": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-16T12:10:48.358Z",
+      "lastSyncAt": "2026-11-17T12:35:19.024Z",
       "fetchedCount": 10,
       "publishedCount": 10,
       "pendingReviewCount": 0,
@@ -24,7 +24,7 @@
     },
     "wikimedia_commons": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-16T12:10:49.126Z",
+      "lastSyncAt": "2026-11-17T12:35:20.339Z",
       "fetchedCount": 5,
       "publishedCount": 0,
       "pendingReviewCount": 5,
@@ -67,7 +67,7 @@
         "ijebu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:47.330Z",
+      "retrievedAt": "2026-11-17T12:35:18.254Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -107,7 +107,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:47.414Z",
+      "retrievedAt": "2026-11-17T12:35:18.366Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -147,7 +147,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:47.500Z",
+      "retrievedAt": "2026-11-17T12:35:18.471Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -187,7 +187,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:47.581Z",
+      "retrievedAt": "2026-11-17T12:35:18.586Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -227,7 +227,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:47.665Z",
+      "retrievedAt": "2026-11-17T12:35:18.692Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -267,7 +267,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:47.753Z",
+      "retrievedAt": "2026-11-17T12:35:18.808Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -280,7 +280,7 @@
       "providerName": "Wikipedia Heritage Archive",
       "title": "Benin Bronzes",
       "summary": "The Benin Bronzes are a group of several thousand metal plaques and sculptures that decorated the royal palace of the Kingdom of Benin, in what is now Edo State, Nigeria. The metal plaques were produced by the Guild of Benin Bronze Casters, now located in Igun Street, also known",
-      "body": "The Benin Bronzes are a group of several thousand metal plaques and sculptures that decorated the royal palace of the Kingdom of Benin, in what is now Edo State, Nigeria. The metal plaques were produced by the Guild of Benin Bronze Casters, now located in Igun Street, also known as Igun-Eronmwon Quarters. Collectively, the objects form the best examples of Benin art and were created from the fourteenth century by artists of the Edo people. The plaques, which in the Edo language are called Ama, depict scenes or represent themes in the history of the kingdom. Apart from the plaques, other sculptures in brass or bronze include portrait heads, jewellery, and smaller pieces.\n\nSome of the dramatic sculptures date to the fourteenth century, but the bulk of the collection dates to the fifteenth and sixteenth centuries. It is believed that two \"Golden Ages\" in Benin metal workmanship occurred during the reigns of Esigie (fl. 1550) and of Eresoyen (1735–1750), when their workmanship achieved its highest quality.\nMost of the plaques and other objects were taken by British forces during the Benin Expedition of 1897 as the British Empire's control was being consolidated in Southern Nigeria. This expedition was positioned by British sources as retaliation for a massacre of an unarmed party of British envoys and a large number of their African bearers in January 1897. Some contemporary scholars, such as Dan Hicks, argue that the expedition was part of a broader series of premeditated attacks, framed as retaliatory or punitive, to further European imperialistic and economic interests in Africa. Following the expedition, two hundred pieces were taken to the British Museum in London, while the rest were taken to other European museums. A large number are held by the British Museum, with other notable collections in Germany and the United States.\nLate 19th-century scholars O. M. Dalton and Charles Hercules Read erroneously concluded that Benin knowledge of metallurgy came from the Portuguese traders, who were in contact with Benin in the early modern period. The Kingdom of Benin was a hub of African civilization long before Portuguese traders visited, and bronzes were made in Benin prior to the arrival of the Portuguese. The Benin bronze sculpture tradition is thought to have derived from or been influenced by that of the older nearby Kingdom of Ife in southwest Nigeria.\nWhile the collection is known as the Benin Bronzes, like most West African \"bronzes\" the pieces are mostly made of brass of variable composition. There are also pieces made of mixtures of bronze and brass, of wood, of ceramic, and of ivory, among other materials. The metal pieces were made using lost-wax casting and are considered among the best African sculptures made using this technique. Benin began to trade ivory, pepper, and slaves with the Portuguese in the late 15th century and incorporated the use of manillas (brass ingots in the form of bracelets, bought from the Portuguese) as a metal source in their sculpture. The manillas' brass, previously suggested to come from The Netherlands, is now thought to come from the Rhineland region of Germany.",
+      "body": "The Benin Bronzes are a group of several thousand metal plaques and sculptures that decorated the royal palace of the Kingdom of Benin, in what is now Edo State, Nigeria. The metal plaques were produced by the Guild of Benin Bronze Casters, now located in Igun Street, also known as Igun-Eronmwon Quarters. Collectively, the objects form the best examples of Benin art and were created from the fourteenth century by artists of the Edo people. The plaques, which in the Edo language are called Ama, depict scenes or represent themes in the history of the kingdom. Apart from the plaques, other sculptures in brass or bronze include portrait heads, jewellery, and smaller pieces.\n\nSome of the dramatic sculptures date to the fourteenth century, but the bulk of the collection dates to the fifteenth and sixteenth centuries. It is believed that two \"Golden Ages\" in Benin metal workmanship occurred during the reigns of Esigie (fl. 1550) and of Eresoyen (1735–1750), when their workmanship achieved its highest quality.\nMost of the plaques and other objects were taken by British forces during the Benin Expedition of 1897 as the British Empire's control was being consolidated in Southern Nigeria. This expedition was positioned by British sources as retaliation for a massacre of an unarmed party of British envoys and a large number of their African bearers in January 1897. Following the expedition, two hundred pieces were taken to the British Museum in London, while the rest were taken to other European museums. A large number are held by the British Museum, with other notable collections in Germany and the United States.\nLate 19th-century scholars O. M. Dalton and Charles Hercules Read erroneously concluded that Benin knowledge of metallurgy came from the Portuguese traders, who were in contact with Benin in the early modern period. The Kingdom of Benin was a hub of African civilization long before Portuguese traders visited, and bronzes were made in Benin prior to the arrival of the Portuguese. The Benin bronze sculpture tradition is thought to have derived from or been influenced by that of the older nearby Kingdom of Ife in southwest Nigeria.\nWhile the collection is known as the Benin Bronzes, like most West African \"bronzes\" the pieces are mostly made of brass of variable composition. There are also pieces made of mixtures of bronze and brass, of wood, of ceramic, and of ivory, among other materials. The metal pieces were made using lost-wax casting and are considered among the best African sculptures made using this technique. Benin began to trade ivory, pepper, and slaves with the Portuguese in the late 15th century and incorporated the use of manillas (brass ingots in the form of bracelets, bought from the Portuguese) as a metal source in their sculpture. The manillas' brass, previously suggested to come from The Netherlands, is now thought to come from the Rhineland region of Germany.",
       "ethnicGroup": "Edo",
       "state": "Edo",
       "region": "South South",
@@ -307,7 +307,7 @@
         "ife"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.356Z",
+      "retrievedAt": "2026-11-17T12:35:19.022Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -351,7 +351,7 @@
         "nok culture"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.356Z",
+      "retrievedAt": "2026-11-17T12:35:19.023Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -393,7 +393,7 @@
         "ikenga"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.356Z",
+      "retrievedAt": "2026-11-17T12:35:19.023Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -433,7 +433,7 @@
         "sukur"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.357Z",
+      "retrievedAt": "2026-11-17T12:35:19.023Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -473,7 +473,7 @@
         "osun-osogbo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.357Z",
+      "retrievedAt": "2026-11-17T12:35:19.023Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -514,7 +514,7 @@
         "igala"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.357Z",
+      "retrievedAt": "2026-11-17T12:35:19.023Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -553,7 +553,7 @@
         "efik"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.358Z",
+      "retrievedAt": "2026-11-17T12:35:19.024Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -593,7 +593,7 @@
         "kanuri"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.358Z",
+      "retrievedAt": "2026-11-17T12:35:19.024Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -634,7 +634,7 @@
         "akwete"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.358Z",
+      "retrievedAt": "2026-11-17T12:35:19.024Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -673,7 +673,7 @@
         "benin city"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:48.358Z",
+      "retrievedAt": "2026-11-17T12:35:19.024Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -715,7 +715,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:49.125Z",
+      "retrievedAt": "2026-11-17T12:35:20.338Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -755,7 +755,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:49.125Z",
+      "retrievedAt": "2026-11-17T12:35:20.338Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -796,7 +796,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:49.125Z",
+      "retrievedAt": "2026-11-17T12:35:20.338Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -838,7 +838,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:49.125Z",
+      "retrievedAt": "2026-11-17T12:35:20.339Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -876,7 +876,7 @@
         "edo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-16T12:10:49.126Z",
+      "retrievedAt": "2026-11-17T12:35:20.339Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
