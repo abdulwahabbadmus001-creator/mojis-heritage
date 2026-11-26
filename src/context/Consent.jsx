@@ -7,7 +7,8 @@ import {
   useRef,
   useState
 } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { ADMIN_BASE_PATH } from "../config/routes.js";
 
 import {
   CONSENT_STORAGE_KEY,
@@ -179,7 +180,11 @@ function ConsentBannerAndModal() {
     });
   }
 
-  const showBanner = !hasDecided && !isManagerOpen;
+  const location = useLocation();
+  const isAdminRoute = Boolean(
+    location?.pathname && location.pathname.startsWith(ADMIN_BASE_PATH)
+  );
+  const showBanner = !hasDecided && !isManagerOpen && !isAdminRoute;
 
   if (!showBanner && !isManagerOpen) {
     return null;

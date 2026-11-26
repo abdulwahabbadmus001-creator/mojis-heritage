@@ -11,7 +11,10 @@ import {
   getSiteSettings,
   saveSiteSettings,
 } from "../services/content";
-import { firebaseReady } from "../firebase";
+import {
+  firebaseReady,
+  missingFirebaseEnvKeys,
+} from "../firebase";
 import {
   SUBMISSION_STATUSES,
   CONTRIBUTION_CONTENT_TYPES,
@@ -331,9 +334,17 @@ function AdminLogin({ setup = false }) {
         password.
       </p>
       {setup && (
-        <div className="notice">
-          Firebase is not configured. Check the Firebase values in your
-          project's <code>.env</code> file.
+        <div className="notice" role="alert">
+          <p style={{ margin: 0 }}>
+            Firebase is not configured. Check the Firebase values in your
+            project's <code>.env</code> file.
+          </p>
+          {missingFirebaseEnvKeys.length > 0 && (
+            <p style={{ margin: "0.45rem 0 0", fontSize: "0.86rem" }}>
+              Missing required environment variable(s):{" "}
+              <code>{missingFirebaseEnvKeys.join(", ")}</code>
+            </p>
+          )}
         </div>
       )}
       {error && (
@@ -390,14 +401,17 @@ export function AdminLayout() {
   const { logout, user } = useAuth();
   const location = useLocation();
   const adminMainRef = useRef(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const navClass = ({ isActive }) =>
     isActive ? "admin-nav-link active" : "admin-nav-link";
 
   useEffect(() => {
+    setMobileNavOpen(false);
     scrollAdminViewToTop(adminMainRef.current);
   }, [location.pathname]);
 
   function handleSectionNavClick() {
+    setMobileNavOpen(false);
     scrollAdminViewToTop(adminMainRef.current);
   }
 
@@ -410,6 +424,15 @@ export function AdminLayout() {
             <p className="sidebar-user-email">{user?.email}</p>
           </div>
           <div className="sidebar-mobile-actions">
+            <button
+              className="btn sidebar-menu-toggle"
+              type="button"
+              aria-expanded={mobileNavOpen}
+              aria-controls="admin-sections-nav"
+              onClick={() => setMobileNavOpen((prev) => !prev)}
+            >
+              {mobileNavOpen ? "Close Menu" : "Sections"}
+            </button>
             <Link className="sidebar-public-link" to="/">
               Public Site ↗
             </Link>
@@ -422,7 +445,12 @@ export function AdminLayout() {
             </button>
           </div>
         </div>
-        <nav className="admin-sidebar-nav" aria-label="Dashboard sections">
+        <nav
+          id="admin-sections-nav"
+          className="admin-sidebar-nav"
+          data-mobile-expanded={mobileNavOpen ? "true" : "false"}
+          aria-label="Dashboard sections"
+        >
           <NavLink
             end
             className={navClass}

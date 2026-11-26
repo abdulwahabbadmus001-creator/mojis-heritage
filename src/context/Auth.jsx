@@ -12,7 +12,12 @@ import {
   signOut,
 } from "firebase/auth";
 
-import { auth, firebaseReady } from "../firebase";
+import {
+  auth,
+  firebaseReady,
+  firebaseConfigError,
+  missingFirebaseEnvKeys,
+} from "../firebase";
 
 const AuthContext = createContext(null);
 
@@ -63,8 +68,12 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     if (!firebaseReady || !auth) {
+      const missingDetail =
+        missingFirebaseEnvKeys.length > 0
+          ? ` Missing required variable(s): ${missingFirebaseEnvKeys.join(", ")}.`
+          : "";
       throw new Error(
-        "Firebase is not configured. Check the values in your .env file."
+        `Firebase is not configured. Check the Firebase values in your project's .env file.${missingDetail}`
       );
     }
 
@@ -107,6 +116,8 @@ export function AuthProvider({ children }) {
       login,
       logout,
       firebaseReady,
+      firebaseConfigError,
+      missingFirebaseEnvKeys,
     }),
     [user, isAdmin, loading]
   );

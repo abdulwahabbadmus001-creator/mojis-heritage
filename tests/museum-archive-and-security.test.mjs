@@ -50,6 +50,11 @@ import {
   LEGACY_BLOCKED_ADMIN_PATHS,
 } from "../src/config/routes.js";
 import { isSafeHttpUrl, sanitizeHttpUrl } from "../src/utils/urlSafety.js";
+import {
+  REQUIRED_FIREBASE_ENV_KEYS,
+  cleanEnvValue,
+  resolveFirebaseConfig,
+} from "../src/firebase.js";
 
 function createMemoryStorage() {
   const store = new Map();
@@ -816,4 +821,60 @@ test("13. Universal multi-device responsiveness for public site and admin newsro
   assert.match(indexCss, /@media\s*\(max-width:\s*380px\)/); // Ultra-compact phones & Z Fold outer screen (280px-380px)
   assert.match(indexCss, /@media\s*\(min-width:\s*1440px\)/); // Large desktop monitors
   assert.match(indexCss, /font-size:\s*16px\s*!important/); // Prevents iOS Safari auto-zoom on form input focus
+});
+
+test("14. Firebase configuration resolution, missing-variable diagnostics, and CI build verification", () => {
+  assert.deepEqual(REQUIRED_FIREBASE_ENV_KEYS, [
+    "VITE_FIREBASE_API_KEY",
+    "VITE_FIREBASE_AUTH_DOMAIN",
+    "VITE_FIREBASE_PROJECT_ID",
+    "VITE_FIREBASE_APP_ID",
+  ]);
+
+  // Strips accidental trailing commas and wrapping quotes from .env values
+  assert.equal(
+    cleanEnvValue('"mojis-heritage-ae06c.firebaseapp.com",'),
+    "mojis-heritage-ae06c.firebaseapp.com"
+  );
+  assert.equal(cleanEnvValue("  'mojis-heritage-ae06c' , "), "mojis-heritage-ae06c");
+  assert.equal(cleanEnvValue("undefined"), "");
+  assert.equal(cleanEnvValue("your_api_key"), "");
+
+  // Reports exact missing variable names without printing secret values
+  const partial = resolveFirebaseConfig({
+    VITE_FIREBASE_PROJECT_ID: "mojis-heritage-ae06c",
+  });
+  assert.equal(partial.ready, false);
+  assert.deepEqual(partial.missingKeys, [
+    "VITE_FIREBASE_API_KEY",
+    "VITE_FIREBASE_AUTH_DOMAIN",
+    "VITE_FIREBASE_APP_ID",
+  ]);
+  assert.match(partial.errorMessage, /VITE_FIREBASE_API_KEY/);
+  assert.match(partial.errorMessage, /VITE_FIREBASE_AUTH_DOMAIN/);
+  assert.match(partial.errorMessage, /VITE_FIREBASE_APP_ID/);
+
+  // Valid configuration resolves ready = true with zero missing keys
+  const complete = resolveFirebaseConfig({
+    VITE_FIREBASE_API_KEY: "test-public-web-key-value",
+    VITE_FIREBASE_AUTH_DOMAIN: "mojis-heritage-ae06c.firebaseapp.com",
+    VITE_FIREBASE_PROJECT_ID: "mojis-heritage-ae06c",
+    VITE_FIREBASE_STORAGE_BUCKET: "mojis-heritage-ae06c.firebasestorage.app",
+    VITE_FIREBASE_MESSAGING_SENDER_ID: "831372230640",
+    VITE_FIREBASE_APP_ID: "1:831372230640:web:14c515477551dbdf4d6735",
+  });
+  assert.equal(complete.ready, true);
+  assert.deepEqual(complete.missingKeys, []);
+  assert.equal(complete.errorMessage, "");
+
+  // Verify scheduled CI workflow resolves and validates VITE_FIREBASE_* before building
+  const rootDir = process.cwd();
+  const workflowYaml = fs.readFileSync(
+    path.join(rootDir, ".github", "workflows", "scheduled-heritage-sync.yml"),
+    "utf8"
+  );
+  assert.match(workflowYaml, /VITE_FIREBASE_API_KEY/);
+  assert.match(workflowYaml, /VITE_FIREBASE_AUTH_DOMAIN/);
+  assert.match(workflowYaml, /VITE_FIREBASE_PROJECT_ID/);
+  assert.match(workflowYaml, /VITE_FIREBASE_APP_ID/);
 });

@@ -3465,8 +3465,38 @@ textarea:focus-visible {
 }
 
 .table td:last-child .btn,
-.table td:last-child a.btn {
+.table td:last-child a.btn,
+.table td button {
   margin: 0.18rem 0.28rem 0.18rem 0;
+}
+
+.table td button:not(.btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0.42rem 0.78rem;
+  border-radius: 8px;
+  border: 1px solid var(--border, #ccd5cd);
+  background: var(--white, #ffffff);
+  color: var(--text, #18201b);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.table td button:not(.btn):hover {
+  border-color: var(--green, #1a5c2e);
+}
+
+:root[data-theme="noir"] .table td button:not(.btn) {
+  background: #1c2029;
+  color: #f5f2eb;
+  border-color: rgba(255, 248, 231, 0.22);
+}
+
+.sidebar-menu-toggle {
+  display: none;
 }
 
 /* 9.1 Unified Navigation & Compact Laptop / Tablet Landscape Breakpoint (<= 1100px) */
@@ -3577,21 +3607,41 @@ textarea:focus-visible {
     min-height: 36px;
   }
 
+  .sidebar .sidebar-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.38rem 0.75rem;
+    font-size: 0.78rem;
+    min-height: 36px;
+    background: rgba(212, 168, 83, 0.2);
+    color: #fff3d1;
+    border: 1px solid rgba(212, 168, 83, 0.45);
+  }
+
   .admin-sidebar-nav {
     display: flex;
     flex-direction: row;
     min-width: 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
     white-space: nowrap;
     gap: 0.42rem;
     padding-bottom: 0.2rem;
     scrollbar-width: thin;
   }
 
+  .admin-sidebar-nav[data-mobile-expanded="true"] {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    white-space: normal;
+    padding-top: 0.25rem;
+  }
+
   .sidebar .admin-sidebar-nav a {
     display: inline-flex;
     align-items: center;
+    min-height: 38px;
     padding: 0.44rem 0.8rem;
     margin: 0;
     font-size: 0.82rem;
@@ -3618,17 +3668,16 @@ textarea:focus-visible {
     min-height: auto;
   }
 
-  .table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
+  .admin-main div[style*="overflow-x"] {
+    max-width: 100%;
     -webkit-overflow-scrolling: touch;
-    font-size: 0.84rem;
+    touch-action: pan-x pan-y;
   }
 
-  .table thead,
-  .table tbody {
-    min-width: 620px;
+  .table {
+    width: 100%;
+    min-width: 600px;
+    font-size: 0.84rem;
   }
 }
 
