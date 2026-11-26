@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/Auth";
+import { evaluateAdminGateState } from "../utils/adminAuth.js";
 import { ADMIN_BASE_PATH, adminPath } from "../config/routes.js";
 import { isSafeHttpUrl, sanitizeHttpUrl } from "../utils/urlSafety.js";
 import {
@@ -262,6 +263,8 @@ function AdminLoading() {
     </section>
   );
 }
+export { evaluateAdminGateState };
+
 export function AdminGate() {
   const { user, isAdmin, loading } = useAuth();
   useEffect(() => {
@@ -277,16 +280,22 @@ export function AdminGate() {
       }
     };
   }, []);
-  if (loading) {
+  const gateState = evaluateAdminGateState({
+    loading,
+    firebaseReady,
+    user,
+    isAdmin,
+  });
+  if (gateState === "loading") {
     return <AdminLoading />;
   }
-  if (!firebaseReady) {
+  if (gateState === "setup") {
     return <AdminLogin setup />;
   }
-  if (!user) {
+  if (gateState === "unauthenticated") {
     return <AdminLogin />;
   }
-  if (!isAdmin) {
+  if (gateState === "denied") {
     return (
       <section className="container section">
         <h1 className="heading">Admin access denied</h1>

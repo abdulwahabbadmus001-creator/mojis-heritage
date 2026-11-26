@@ -55,6 +55,13 @@ import {
   cleanEnvValue,
   resolveFirebaseConfig,
 } from "../src/firebase.js";
+import {
+  UNAUTHORIZED_ADMIN_MESSAGE,
+  hasAdminClaim,
+  verifyAdminUser,
+  authenticateAdminWithDeps,
+  evaluateAdminGateState,
+} from "../src/utils/adminAuth.js";
 
 function createMemoryStorage() {
   const store = new Map();
@@ -877,4 +884,107 @@ test("14. Firebase configuration resolution, missing-variable diagnostics, and C
   assert.match(workflowYaml, /VITE_FIREBASE_AUTH_DOMAIN/);
   assert.match(workflowYaml, /VITE_FIREBASE_PROJECT_ID/);
   assert.match(workflowYaml, /VITE_FIREBASE_APP_ID/);
+});
+
+test("15. Admin custom-claim authorization allows verified administrators and rejects non-admin or unauthenticated users", async () => {
+  // 1. Custom claim check strictly requires claims.admin === true
+  assert.equal(hasAdminClaim({ claims: { admin: true } }), true);
+  assert.equal(hasAdminClaim({ claims: { admin: false } }), false);
+  assert.equal(hasAdminClaim({ claims: { admin: "true" } }), false);
+  assert.equal(hasAdminClaim({ claims: {} }), false);
+  assert.equal(hasAdminClaim(null), false);
+
+  // 2. Authorized administrator with admin: true custom claim reaches the newsroom
+  let signedOutCount = 0;
+  let forceRefreshPassed = false;
+  const mockAdminUser = {
+    uid: "jn1Ui0JzG5MExVrm7u9ph50IuoF2",
+    email: "akannimi001@gmail.com",
+    async getIdTokenResult(forceRefresh) {
+      forceRefreshPassed = forceRefresh === true;
+      return { claims: { admin: true } };
+    },
+  };
+  const adminCredential = await authenticateAdminWithDeps({
+    email: "akannimi001@gmail.com",
+    password: "verified-admin-session",
+    firebaseReadyFlag: true,
+    authInstance: {},
+    signInFn: async () => ({ user: mockAdminUser }),
+    signOutFn: async () => {
+      signedOutCount += 1;
+    },
+  });
+  assert.equal(adminCredential.user.uid, "jn1Ui0JzG5MExVrm7u9ph50IuoF2");
+  assert.equal(forceRefreshPassed, true);
+  assert.equal(signedOutCount, 0);
+
+  // 3. Ordinary authenticated user without admin: true is immediately signed out and denied with exact error message
+  const mockOrdinaryUser = {
+    uid: "ordinary-user-uid",
+    email: "visitor@example.com",
+    async getIdTokenResult() {
+      return { claims: {} };
+    },
+  };
+  await assert.rejects(
+    () =>
+      authenticateAdminWithDeps({
+        email: "visitor@example.com",
+        password: "ordinary-user-session",
+        firebaseReadyFlag: true,
+        authInstance: {},
+        signInFn: async () => ({ user: mockOrdinaryUser }),
+        signOutFn: async () => {
+          signedOutCount += 1;
+        },
+      }),
+    new RegExp(UNAUTHORIZED_ADMIN_MESSAGE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  );
+  assert.equal(signedOutCount, 1);
+
+  // 4. Unauthenticated user (null) fails verifyAdminUser and AdminGate state checks
+  const unauthVerification = await verifyAdminUser(null);
+  assert.equal(unauthVerification.authorized, false);
+  assert.equal(
+    evaluateAdminGateState({
+      loading: false,
+      firebaseReady: true,
+      user: null,
+      isAdmin: false,
+    }),
+    "unauthenticated"
+  );
+  assert.equal(
+    evaluateAdminGateState({
+      loading: false,
+      firebaseReady: true,
+      user: mockOrdinaryUser,
+      isAdmin: false,
+    }),
+    "denied"
+  );
+  assert.equal(
+    evaluateAdminGateState({
+      loading: false,
+      firebaseReady: true,
+      user: mockAdminUser,
+      isAdmin: true,
+    }),
+    "authorized"
+  );
+
+  // 5. Verify AdminGate and Firestore security rules enforce admin: true custom claim
+  const rootDir = process.cwd();
+  const adminJsx = fs.readFileSync(
+    path.join(rootDir, "src", "admin", "Admin.jsx"),
+    "utf8"
+  );
+  const firestoreRules = fs.readFileSync(
+    path.join(rootDir, "firestore.rules"),
+    "utf8"
+  );
+  assert.match(adminJsx, /evaluateAdminGateState/);
+  assert.match(adminJsx, /Admin access denied/);
+  assert.match(firestoreRules, /request\.auth\.token\.admin == true/);
 });

@@ -17,7 +17,21 @@ import {
   firebaseReady,
   firebaseConfigError,
   missingFirebaseEnvKeys,
-} from "../firebase";
+} from "../firebase.js";
+
+import {
+  UNAUTHORIZED_ADMIN_MESSAGE,
+  hasAdminClaim,
+  verifyAdminUser,
+  authenticateAdminWithDeps,
+} from "../utils/adminAuth.js";
+
+export {
+  UNAUTHORIZED_ADMIN_MESSAGE,
+  hasAdminClaim,
+  verifyAdminUser,
+  authenticateAdminWithDeps,
+};
 
 const AuthContext = createContext(null);
 
@@ -53,8 +67,10 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const token = await currentUser.getIdTokenResult(true);
-        setIsAdmin(token.claims.admin === true);
+        const { authorized } = await verifyAdminUser(currentUser, {
+          forceRefresh: true,
+        });
+        setIsAdmin(authorized);
       } catch (error) {
         console.error("Unable to verify administrator access:", error);
         setIsAdmin(false);
@@ -67,31 +83,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function login(email, password) {
-    if (!firebaseReady || !auth) {
-      const missingDetail =
-        missingFirebaseEnvKeys.length > 0
-          ? ` Missing required variable(s): ${missingFirebaseEnvKeys.join(", ")}.`
-          : "";
-      throw new Error(
-        `Firebase is not configured. Check the Firebase values in your project's .env file.${missingDetail}`
-      );
-    }
-
-    const credential = await signInWithEmailAndPassword(
-      auth,
-      email.trim(),
-      password
-    );
-
-    const token = await credential.user.getIdTokenResult(true);
-
-    if (token.claims.admin !== true) {
-      await signOut(auth);
-
-      throw new Error(
-        "This account is not authorised for the Moji's Heritage newsroom."
-      );
-    }
+    const credential = await authenticateAdminWithDeps({
+      email,
+      password,
+      firebaseReadyFlag: firebaseReady,
+      authInstance: auth,
+      missingKeys: missingFirebaseEnvKeys,
+      signInFn: signInWithEmailAndPassword,
+      signOutFn: signOut,
+    });
 
     setUser(credential.user);
     setIsAdmin(true);
