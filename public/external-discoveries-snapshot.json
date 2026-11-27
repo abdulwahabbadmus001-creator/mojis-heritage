@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0",
   "projectId": "mojis-heritage-ae06c",
-  "lastScheduledSyncAt": "2026-11-26T13:20:01.572Z",
+  "lastScheduledSyncAt": "2026-11-27T13:16:11.580Z",
   "totalRecords": 25,
   "publishedCount": 19,
   "pendingReviewCount": 6,
   "providerStatuses": {
     "met_museum": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-26T13:20:02.701Z",
+      "lastSyncAt": "2026-11-27T13:16:12.571Z",
       "fetchedCount": 6,
       "publishedCount": 6,
       "pendingReviewCount": 0,
@@ -16,7 +16,7 @@
     },
     "wikipedia_nigeria": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-26T13:20:02.860Z",
+      "lastSyncAt": "2026-11-27T13:16:12.882Z",
       "fetchedCount": 10,
       "publishedCount": 10,
       "pendingReviewCount": 0,
@@ -24,7 +24,7 @@
     },
     "wikimedia_commons": {
       "status": "healthy",
-      "lastSyncAt": "2026-11-26T13:20:03.773Z",
+      "lastSyncAt": "2026-11-27T13:16:13.705Z",
       "fetchedCount": 5,
       "publishedCount": 0,
       "pendingReviewCount": 5,
@@ -67,7 +67,7 @@
         "ijebu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:01.885Z",
+      "retrievedAt": "2026-11-27T13:16:12.017Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -107,7 +107,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.250Z",
+      "retrievedAt": "2026-11-27T13:16:12.134Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -147,7 +147,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.336Z",
+      "retrievedAt": "2026-11-27T13:16:12.248Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -187,7 +187,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.537Z",
+      "retrievedAt": "2026-11-27T13:16:12.346Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -227,7 +227,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.630Z",
+      "retrievedAt": "2026-11-27T13:16:12.464Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -267,7 +267,7 @@
         "edo peoples"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.701Z",
+      "retrievedAt": "2026-11-27T13:16:12.571Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -307,7 +307,7 @@
         "ife"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.858Z",
+      "retrievedAt": "2026-11-27T13:16:12.879Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -351,7 +351,7 @@
         "nok culture"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.858Z",
+      "retrievedAt": "2026-11-27T13:16:12.879Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -393,7 +393,7 @@
         "ikenga"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.858Z",
+      "retrievedAt": "2026-11-27T13:16:12.880Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -433,7 +433,7 @@
         "sukur"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.859Z",
+      "retrievedAt": "2026-11-27T13:16:12.880Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -446,7 +446,7 @@
       "providerName": "Wikipedia Heritage Archive",
       "title": "Osun-Osogbo",
       "summary": "Osun-Osogbo is a sacred grove along the banks of the Osun river just outside the city of Osogbo, Osun State of Nigeria.\nThe Osun-Osogbo Grove is several centuries old and is among the last of the sacred forests that once adjoined the edges of most Yoruba cities before extensive u",
-      "body": "Osun-Osogbo is a sacred grove along the banks of the Osun river just outside the city of Osogbo, Osun State of Nigeria.\nThe Osun-Osogbo Grove is several centuries old and is among the last of the sacred forests that once adjoined the edges of most Yoruba cities before extensive urbanization. In recognition of its global significance and cultural value, the Sacred Grove was inscribed as a UNESCO World Heritage Site in 2005.\nThe 1950s witnessed the desecration of the Osun-Osogbo Grove: shrines were neglected and priests abandoned the grove as customary responsibilities and sanctions weakened. Prohibited actions like fishing, hunting and felling of trees in the Grove was done indiscriminately until an Austrian national named Susanne Wenger (1915–2009) helped to reinstate traditional protections.\nWith the support and encouragement of the Ataoja (the royal king of the time) and the support of the concerned local people. Wenger \"formed the New Sacred Art movement to challenge land speculators, repel poachers, protect shrines and begin the long process of bringing the sacred place back to life by establishing it again, as the sacred heart of Osogbo\". Wenger later came to be honoured with the title \"Adunni Olorisha\" for her custodial efforts and her consistent devotion to the gods of the grove.",
+      "body": "Osun-Osogbo is a sacred grove along the banks of the Osun river just outside the city of Osogbo, Osun State of Nigeria.\nThe Osun-Osogbo Grove is several centuries old and is among the last of the sacred forests that once adjoined the edges of most Yoruba cities before extensive urbanization. In recognition of its global significance and cultural value, the Sacred Grove was inscribed as a UNESCO World Heritage Site in 2005.\n\nThe 1950s witnessed the desecration of the Osun-Osogbo Grove: shrines were neglected and priests abandoned the grove as customary responsibilities and sanctions weakened. Prohibited actions like fishing, hunting and felling of trees in the Grove was done indiscriminately until an Austrian national named Susanne Wenger (1915–2009) helped to reinstate traditional protections.\nWith the support and encouragement of the Ataoja (the royal king of the time) and the support of the concerned local people. Wenger \"formed the New Sacred Art movement to challenge land speculators, repel poachers, protect shrines and begin the long process of bringing the sacred place back to life by establishing it again, as the sacred heart of Osogbo\". Wenger later came to be honoured with the title \"Adunni Olorisha\" for her custodial efforts and her consistent devotion to the gods of the grove.",
       "ethnicGroup": "Yoruba",
       "state": "Osun",
       "region": "South West",
@@ -473,7 +473,7 @@
         "osun-osogbo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.859Z",
+      "retrievedAt": "2026-11-27T13:16:12.880Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -514,7 +514,7 @@
         "igala"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.859Z",
+      "retrievedAt": "2026-11-27T13:16:12.881Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -553,7 +553,7 @@
         "efik"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.859Z",
+      "retrievedAt": "2026-11-27T13:16:12.881Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -593,7 +593,7 @@
         "kanuri"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.860Z",
+      "retrievedAt": "2026-11-27T13:16:12.881Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -634,7 +634,7 @@
         "akwete"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.860Z",
+      "retrievedAt": "2026-11-27T13:16:12.882Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -673,7 +673,7 @@
         "benin city"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:02.860Z",
+      "retrievedAt": "2026-11-27T13:16:12.882Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -715,7 +715,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:03.772Z",
+      "retrievedAt": "2026-11-27T13:16:13.704Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -755,7 +755,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:03.772Z",
+      "retrievedAt": "2026-11-27T13:16:13.704Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -796,7 +796,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:03.772Z",
+      "retrievedAt": "2026-11-27T13:16:13.704Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -838,7 +838,7 @@
         "igbo ukwu"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:03.773Z",
+      "retrievedAt": "2026-11-27T13:16:13.705Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
@@ -876,7 +876,7 @@
         "edo"
       ],
       "rejectionReason": null,
-      "retrievedAt": "2026-11-26T13:20:03.773Z",
+      "retrievedAt": "2026-11-27T13:16:13.705Z",
       "reviewerNotes": "",
       "reviewedBy": "",
       "reviewedAt": null,
